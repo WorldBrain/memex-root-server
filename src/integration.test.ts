@@ -1,0 +1,2 @@
+describe('Global integration tests', () => {
+})
