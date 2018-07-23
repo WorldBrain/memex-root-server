@@ -7,6 +7,7 @@ import { createAppControllers } from './controllers'
 import { getSettings } from './options'
 import { executeDevShortcuts } from './dev-shortcuts'
 import { createHttpServer } from './server'
+import { createPassportStrategies } from './express/passport';
 
 
 export async function main(config = null) : Promise<any> {
@@ -19,7 +20,10 @@ export async function main(config = null) : Promise<any> {
     })
     const controllers = createAppControllers(components)
     const routes = createAppRoutes(controllers)
-    const app = createApp({ routes })
+    const passportStrategies = createPassportStrategies({
+      google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
+    })
+    const app = createApp({ routes, passportStrategies })
     const server = await createHttpServer(app)
     if (settings.tier === 'development') {
       await executeDevShortcuts({components, controllers, config: settings.devOptions})

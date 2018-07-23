@@ -23,43 +23,26 @@ export function parseCommandLineOptions() {
     return options
 }
 
-export function shouldUseAws({tier}) {
-    if (tier === 'development') {
-        // In development, use AWS backend only if requested explicitly through the AWS_REGION env var
-        return !!process.env.AWS_REGION
-    }
-
-    return true
-}
-
-export function shouldUseAwsForTests() {
-    return shouldUseAws({tier: getDeploymentTier()})
-}
-
-export function getUnitTestAwsBucket() {
-    return 'unittest.memex.link'
-}
-
 export function getDeploymentTier() {
     return process.env.TIER || 'development'
 }
 
-export function getAwsBucketName({tier}) {
-    if (tier === 'development') {
-        return shouldUseAws({tier}) ? 'staging.memex.link' : null
-    }
-    return tier === 'production' ? process.env.PRODUCTION_BUCKET : process.env.STAGING_BUCKET
+export function getDomain({tier}) {
+    return tier === 'production' ? 'https://memex.cloud' : 'https://staging.memex.cloud'
 }
 
-export function getBaseUrl({tier, awsBucket}) {
-    const bucketUrl = awsBucket && `http://${awsBucket}`
-    return tier === 'development' ? bucketUrl || 'http://localhost:3000' : bucketUrl
+export function getBaseUrl({tier}) {
+    return tier === 'development' ? 'http://localhost:3002' : getDomain({tier})
+}
+
+export function getGoogleCredentials() {
+    return { id: process.env.GOOGLE_CLIENT_ID, secret: process.env.GOOGLE_CLIENT_SECRET }
 }
 
 export function getSettings() {
     const { dev: devOptions } = parseCommandLineOptions()
     const tier = getDeploymentTier()
-    const awsBucket = getAwsBucketName({tier})
-    const baseUrl = getBaseUrl({tier, awsBucket})
-    return { devOptions, tier, awsBucket, baseUrl }
+    const baseUrl = getBaseUrl({tier})
+    const googleCredentials = getGoogleCredentials()
+    return { devOptions, tier, baseUrl, googleCredentials }
 }

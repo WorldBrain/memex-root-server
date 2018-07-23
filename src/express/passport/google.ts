@@ -1,0 +1,17 @@
+import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
+import { ProviderConfiguration } from './types'
+
+export function createGoogleStrategy(config : ProviderConfiguration) {
+    return new GoogleStrategy({
+        clientID: config.id,
+        clientSecret: config.secret,
+        callbackURL: config.callbackUrl
+      }, (accessToken, refreshToken, profile, done) => {
+        return done({profile, accessToken, refreshToken})
+
+        //    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+        //      return done(err, user);
+        //    });
+      }
+    )
+}
