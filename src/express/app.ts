@@ -1,11 +1,13 @@
 const express = require('express')
+const cookieParser = require('cookie-parser')
+const cookieEncrypter = require('cookie-encrypter')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
 import { AppRoutes } from './routes'
 
 export default function createApp(
-  {routes, preConfigure, passportStrategies, allowUndefinedRoutes = false} :
-  {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], allowUndefinedRoutes? : boolean}
+  {routes, preConfigure, passportStrategies, cookieSecret, allowUndefinedRoutes = false} :
+  {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], cookieSecret : string, allowUndefinedRoutes? : boolean}
 ) {
   function route(f?) {
     if (!f && allowUndefinedRoutes) {
@@ -14,11 +16,20 @@ export default function createApp(
     return (req, res) => f({req, res})
   }
 
+  passport.serializeUser(function(user, done) {
+    done(null, 'none');
+  });
+  
+  passport.deserializeUser(function(id, done) {
+    done(null, id);
+  })
   passportStrategies.forEach(strategy => {
     passport.use(strategy)
   })
 
   const app = express()
+  app.use(cookieParser(cookieSecret))
+  app.use(cookieEncrypter(cookieSecret))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(passport.initialize())
@@ -35,6 +46,6 @@ export default function createApp(
   preConfigure && preConfigure(app)
   app.get('/auth/google', route(routes.authGoogleEntry))
   app.get('/auth/google/callback', route(routes.authGoogleCallback))
-  app.get('/auth/google/refresh', route(routes.authGoogleRefresh))
+  app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
   return app
 }

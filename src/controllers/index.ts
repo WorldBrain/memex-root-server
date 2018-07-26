@@ -1,11 +1,12 @@
 import { AppComponents } from '../components'
+import * as authGoogle from './auth/google'
 
 export interface AppControllers {
-    // putAnnotation : Function
+    authGoogleRefresh : Function
 }
 
-export function createAppControllers(appComponents : AppComponents) : AppControllers {
+export function createAppControllers(appComponents : AppComponents, settings) : AppControllers {
     return {
-        // putAnnotation: annotations.putAnnotation(appComponents)
+        authGoogleRefresh: authGoogle.refresh(settings.googleCredentials)
     }
 }

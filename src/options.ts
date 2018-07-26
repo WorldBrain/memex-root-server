@@ -39,10 +39,25 @@ export function getGoogleCredentials() {
     return { id: process.env.GOOGLE_CLIENT_ID, secret: process.env.GOOGLE_CLIENT_SECRET }
 }
 
+export function getCookieSecret({tier}) {
+    let secret = process.env.COOKIE_SECRET
+    if (!secret) {
+        if (tier === 'development') {
+            secret = 'notsosecret|ReDrUm!!|notsosecret'
+        } else {
+            throw new Error('Tried to run this with providing a COOKIE_SECRET. Exploding for your safety  <3')
+        }
+    }
+    return secret
+}
+
 export function getSettings() {
-    const { dev: devOptions } = parseCommandLineOptions()
     const tier = getDeploymentTier()
-    const baseUrl = getBaseUrl({tier})
-    const googleCredentials = getGoogleCredentials()
-    return { devOptions, tier, baseUrl, googleCredentials }
+    return {
+        tier,
+        baseUrl: getBaseUrl({tier}),
+        googleCredentials: getGoogleCredentials(),
+        cookieSecret: getCookieSecret({tier}),
+        devOptions: parseCommandLineOptions().dev,
+    }
 }

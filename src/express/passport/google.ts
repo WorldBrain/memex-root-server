@@ -5,9 +5,9 @@ export function createGoogleStrategy(config : ProviderConfiguration) {
     return new GoogleStrategy({
         clientID: config.id,
         clientSecret: config.secret,
-        callbackURL: config.callbackUrl
-      }, (accessToken, refreshToken, profile, done) => {
-        return done({profile, accessToken, refreshToken})
+        callbackURL: config.callbackUrl,
+      }, (accessToken, refreshToken, params, profile, done) => {
+        return done(null, {profile, accessToken, refreshToken, expiresInSeconds: params.expires_in})
 
         //    User.findOrCreate({ googleId: profile.id }, function (err, user) {
         //      return done(err, user);

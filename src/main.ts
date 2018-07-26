@@ -18,12 +18,12 @@ export async function main(config = null) : Promise<any> {
       baseUrl: settings.baseUrl,
       // awsBucket: settings.awsBucket
     })
-    const controllers = createAppControllers(components)
+    const controllers = createAppControllers(components, settings)
     const routes = createAppRoutes(controllers)
     const passportStrategies = createPassportStrategies({
       google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
     })
-    const app = createApp({ routes, passportStrategies })
+    const app = createApp({ routes, passportStrategies, cookieSecret: settings.cookieSecret })
     const server = await createHttpServer(app)
     if (settings.tier === 'development') {
       await executeDevShortcuts({components, controllers, config: settings.devOptions})
