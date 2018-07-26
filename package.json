@@ -1,5 +1,5 @@
 {
-  "name": "direct-linking-server",
+  "name": "memex-root-service",
   "version": "0.0.1",
   "private": true,
   "description": "",
@@ -46,6 +46,7 @@
   "dependencies": {
     "@types/passport": "^0.4.6",
     "aws-sdk": "^2.224.1",
+    "aws-serverless-express": "^3.2.0",
     "cookie-encrypter": "^1.0.1",
     "cookie-parser": "^1.4.3",
     "datauri": "^1.1.0",
@@ -97,6 +98,7 @@
     "chai": "^4.1.2",
     "chai-http": "^4.0.0",
     "chai-string": "^1.4.0",
+    "claudia": "^5.1.0",
     "clipboard-polyfill": "^2.4.7",
     "connect-livereload": "^0.6.0",
     "console-debug": "^0.4.2",

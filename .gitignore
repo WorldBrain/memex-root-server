@@ -99,5 +99,5 @@ assets/build/script.js
 # Used as root for local development server
 public
 
-
-
+env-*.json
+claudia.json
