@@ -10,17 +10,20 @@ import { createHttpServer } from './server'
 import { createPassportStrategies } from './express/passport';
 
 
-export function createSetup() {
+export async function createSetup() {
   const settings = getSettings()
 
-  const components = createAppComponents({
+  const components = await createAppComponents({
     baseUrl: settings.baseUrl,
-    // awsBucket: settings.awsBucket
+    tier: settings.tier
   })
   const controllers = createAppControllers(components, settings)
   const routes = createAppRoutes(controllers)
   const passportStrategies = createPassportStrategies({
-    google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
+    userStorage: components.storage.users,
+    providerConfigurations: {
+      google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
+    },
   })
 
   return {settings, components, controllers, routes, passportStrategies}
@@ -33,8 +36,13 @@ export function createExpressApp({ routes, passportStrategies, settings }) {
 
 
 export async function main() : Promise<any> {
-    const setup = createSetup()
+    const setup = await createSetup()
     const app = createExpressApp(setup)
+
+    process.once('SIGUSR2', async () => {
+      await setup.components.storage.cleanup()
+      process.kill(process.pid, 'SIGUSR2')
+    })
     
     const server = await createHttpServer(app)
     if (setup.settings.tier === 'development') {

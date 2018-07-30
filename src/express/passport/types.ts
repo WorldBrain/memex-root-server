@@ -3,3 +3,5 @@ export interface ProviderConfiguration {
     secret : string
     callbackUrl : string
 }
+
+export type ProviderConfigurations = {[name : string] : ProviderConfiguration}

@@ -1,7 +1,7 @@
-'use strict'
-const awsServerlessExpress = require('aws-serverless-express')
-const app = require('./main-claudia')
-const binaryMimeTypes = [
+import * as awsServerlessExpress from 'aws-serverless-express'
+import setupApp from './main-claudia'
+
+const BINARY_MIME_TYPES = [
 	'application/octet-stream',
 	'font/eot',
 	'font/opentype',
@@ -10,5 +10,9 @@ const binaryMimeTypes = [
 	'image/png',
 	'image/svg+xml'
 ]
-const server = awsServerlessExpress.createServer(app, null, binaryMimeTypes);
-exports.handler = (event, context) => awsServerlessExpress.proxy(server, event, context)
+
+exports.handler = async (event, context) => {
+	const app = await setupApp()
+	const server = awsServerlessExpress.createServer(app, null, BINARY_MIME_TYPES)
+	return await awsServerlessExpress.proxy(server, event, context)
+}

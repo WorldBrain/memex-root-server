@@ -1,5 +1,7 @@
 import * as main from './main'
 
-const setup = main.createSetup()
-const app = main.createExpressApp(setup)
-module.exports = app
+export default async () => {
+    const setup = await main.createSetup()
+    const app = main.createExpressApp(setup)
+    return app
+}

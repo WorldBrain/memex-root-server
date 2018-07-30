@@ -2,6 +2,8 @@ const _ = require('lodash')
 import * as yargs from 'yargs'
 import { DevShortcutCommand, DevShortcutsConfig } from './dev-shortcuts/types'
 
+export type DeploymentTier = 'development' | 'staging' | 'production'
+
 export function parseCommandLineOptions() {
     const options = yargs
         .array('dev')
@@ -23,8 +25,12 @@ export function parseCommandLineOptions() {
     return options
 }
 
-export function getDeploymentTier() {
-    return process.env.TIER || 'development'
+export function getDeploymentTier() : DeploymentTier {
+    const tierFromEnv = process.env.TIER
+    if (tierFromEnv === 'development' || tierFromEnv === 'staging' || tierFromEnv === 'production') {
+        return tierFromEnv
+    }
+    throw new Error('Misconfiguration, unknown deployment tier: ' + tierFromEnv)
 }
 
 export function getDomain({tier}) {

@@ -1,6 +1,7 @@
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const cookieEncrypter = require('cookie-encrypter')
+const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
 import { AppRoutes } from './routes'
@@ -17,8 +18,8 @@ export default function createApp(
   }
 
   passport.serializeUser(function(user, done) {
-    done(null, 'none');
-  });
+    done(null, 'none')
+  })
   
   passport.deserializeUser(function(id, done) {
     done(null, id);
@@ -28,8 +29,13 @@ export default function createApp(
   })
 
   const app = express()
-  app.use(cookieParser(cookieSecret))
-  app.use(cookieEncrypter(cookieSecret))
+  // app.use(cookieParser(cookieSecret))
+  // app.use(cookieEncrypter(cookieSecret))
+  app.use(cookieSession({
+    name: 'session',
+    secret: cookieSecret,
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+  }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(passport.initialize())
@@ -44,6 +50,9 @@ export default function createApp(
   //   next()
   // })
   preConfigure && preConfigure(app)
+  app.get('/auth/register', route(routes.authLocalRegister))
+  app.get('/auth/login', route(routes.authLocalLogin))
+  app.get('/auth/check', route(routes.authLocalCheck))
   app.get('/auth/google', route(routes.authGoogleEntry))
   app.get('/auth/google/callback', route(routes.authGoogleCallback))
   app.post('/auth/google/refresh', route(routes.authGoogleRefresh))

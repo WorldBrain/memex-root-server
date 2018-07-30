@@ -1,3 +1,4 @@
+import { SESSION_KEYS } from './../../constants';
 import * as passport from 'passport'
 import { ExpressReqRes } from '../../types'
 import { AppControllers } from '../../../controllers'
@@ -11,7 +12,6 @@ export function authGoogleEntry(appControllers : AppControllers) {
     scope.push('https://www.googleapis.com/auth/plus.login')
 
     passport.authenticate('google', <any>{
-      session: false,
       includeGrantedScopes: true,
       accessType: 'offline',
       scope,
@@ -23,13 +23,8 @@ export function authGoogleEntry(appControllers : AppControllers) {
 export function authGoogleCallback(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
     const next = () => {
-      res.cookie('auth', {
-        start: Date.now(),
-        refreshToken: req.user.refreshToken
-      }, {
-        signed: true,
-        maxAge: 1000 * 60 * 60 * 24 * 365,
-      })
+      req.session[SESSION_KEYS['google-refresh-token']] = req.user.refreshToken
+      req.session[SESSION_KEYS['last-google-login']] = Date.now()
       delete req.user.refreshToken
       res.json(req.user)
     }
@@ -41,13 +36,6 @@ export function authGoogleCallback(appControllers : AppControllers) {
 export function authGoogleRefresh(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
     const refreshToken = req.signedCookies.auth.refreshToken
-    res.cookie('auth', {
-      start: req.signedCookies.start,
-      refreshToken
-    }, {
-      signed: true,
-      maxAge: 1000 * 60 * 60 * 24 * 365,
-    })
     res.json(await appControllers.authGoogleRefresh({refreshToken}))
   }
 }
