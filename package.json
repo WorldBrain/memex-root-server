@@ -73,6 +73,7 @@
     "randomstring": "^1.1.5",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.5",
+    "require-context": "^1.1.0",
     "shelljs": "^0.8.2",
     "shorthash": "0.0.2",
     "shortid": "^2.2.8",

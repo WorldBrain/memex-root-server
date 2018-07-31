@@ -5,7 +5,11 @@ export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
     putObject(object) : Promise<PutResult>
-    findObject<T>(query, options) : Promise<T | null>
+    findObject<T>(query, options?) : Promise<T | null>
+}
+
+export interface StorageCollectionMap {
+    [name : string] : StorageCollection
 }
 
 export class StorageManager {
@@ -19,7 +23,7 @@ export class StorageManager {
     collection(name : string) : StorageCollection {
         return {
             putObject: (object) => this.backend.putObject(name, object),
-            findObject: (query, options) => this.backend.findObject(name, query, options),
+            findObject: (query, options?) => this.backend.findObject(name, query, options),
         }
     }
 }

@@ -1,4 +1,5 @@
 require('source-map-support').install()
+require('require-context/register')
 // import { setupDebugGlobal } from './debug'
 import createApp from './express/app'
 import { createAppComponents } from './components'

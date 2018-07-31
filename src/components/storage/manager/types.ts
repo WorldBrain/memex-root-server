@@ -1,5 +1,3 @@
-import { FilterQuery as MongoFilterQuery } from 'mongodb'
-
 import StorageRegistry from './registry'
 import { Field } from './fields'
 
@@ -11,13 +9,7 @@ export interface MigrationRunner {
     _seen?: boolean
 }
 
-export interface FindOpts {
-    reverse?: boolean
-    skip?: number
-    limit?: number
-}
-
-export type FilterQuery<T> = MongoFilterQuery<T>
+export type CollectionDefinitionMap = {[name : string] : CollectionDefinitions}
 
 export type CollectionDefinitions =
     | CollectionDefinition[]
@@ -29,11 +21,13 @@ export interface CollectionFields {
 
 export interface CollectionField {
     type: FieldType
+    optional?: boolean
     fieldObject?: Field
-    _index?: boolean
+    _index?: number
 }
 
-export type IndexSourceFields = string | [string, string]
+export type IndexSourceField = string | RelationshipReference
+export type IndexSourceFields = IndexSourceField | IndexSourceField[]
 
 export interface IndexDefinition {
     /**
@@ -62,51 +56,52 @@ export interface IndexDefinition {
      */
     fullTextIndexName?: string
 }
+
+export interface RelationshipType {
+    alias?: string
+}
+
+export interface ChildOfRelationship extends RelationshipType {
+    targetCollection?: string // = singleChildOf || childOf
+    fieldName?: string
+}
+
+export interface MultipleChildOfRelationship extends ChildOfRelationship {
+    childOf: string
+}
+export interface SingleChildOfRelationship extends ChildOfRelationship {
+    singleChildOf: string
+}
+export const isChildOfRelationship =
+    (relationship) : relationship is ChildOfRelationship =>
+        !!(<MultipleChildOfRelationship>relationship).childOf ||
+        !!(<SingleChildOfRelationship>relationship).singleChildOf
+export const getChildOfRelationshipTarget = (relationship : ChildOfRelationship) =>
+    (<SingleChildOfRelationship>relationship).singleChildOf ||
+    (<MultipleChildOfRelationship>relationship).childOf
+
+export interface ConnectsRelationship extends RelationshipType {
+    connects: [string, string]
+    fieldNames?: [string, string]
+}
+export const isConnectsRelationship =
+    (relationship : Relationship) : relationship is ConnectsRelationship =>
+        !!(<ConnectsRelationship>relationship).connects
+
+export type Relationship = SingleChildOfRelationship | MultipleChildOfRelationship | ConnectsRelationship
+export type Relationships = Relationship[]
+export type RelationshipsByAlias = {[alias : string] : Relationship}
+export type RelationshipReference = {relationship : string}
+export const isRelationshipReference = (reference) : reference is RelationshipReference => !!(<RelationshipReference>reference).relationship
+
 export interface CollectionDefinition {
     version: Date
-    indices: IndexDefinition[]
     fields: CollectionFields
+    indices: IndexDefinition[]
+    relationships?: Relationships
+    relationshipsByAlias?: RelationshipsByAlias
     migrate?: MigrationRunner
     name?: string
     watch?: boolean // should we include this in the 'changing' event? defaults to true
     backup?: boolean
-}
-
-export interface RegisterableStorage {
-    registerCollection(name: string, defs: CollectionDefinitions): void
-}
-
-export interface ManageableStorage extends RegisterableStorage {
-    initialized: boolean
-    registry: StorageRegistry
-    putObject(collectionName: string, object): Promise<void>
-    findObject<T>(
-        collectionName: string,
-        filter: FilterQuery<T>,
-        opts?: FindOpts,
-    ): Promise<T>
-    findAll<T>(
-        collectionName: string,
-        filter: FilterQuery<T>,
-        opts?: FindOpts,
-    ): Promise<T[]>
-    countAll<T>(collectionName: string, filter: FilterQuery<T>): Promise<number>
-    deleteObject<T>(
-        collectionName: string,
-        filter: FilterQuery<T>,
-    ): Promise<number>
-    updateObject<T>(
-        collectionName: string,
-        filter: FilterQuery<T>,
-        update,
-    ): Promise<number>
-    _finishInitialization(storage): void
-}
-
-export interface DexieSchema {
-    version: number
-    migrations: MigrationRunner[]
-    schema: {
-        [collName: string]: string
-    }
 }
