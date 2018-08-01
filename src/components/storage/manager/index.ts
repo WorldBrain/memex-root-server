@@ -20,6 +20,10 @@ export default class StorageManager {
         this.backend.configure({registry: this.registry})
     }
 
+    finishInitialization() {
+        this.registry.finishInitialization()
+    }
+
     collection(name : string) : StorageCollection {
         return {
             putObject: (object) => this.backend.putObject(name, object),

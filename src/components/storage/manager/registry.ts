@@ -6,7 +6,7 @@ import {
     getChildOfRelationshipTarget,
     SingleChildOfRelationship,
 } from './types/relationships'
-import { CollectionDefinitions, CollectionDefinition } from './types/collections'
+import { CollectionDefinitions, CollectionDefinition, CollectionDefinitionMap } from './types/collections'
 import { IndexSourceField } from './types/indices'
 import FIELD_TYPES from './fields'
 
@@ -48,6 +48,12 @@ export default class StorageRegistry {
                 this.collectionsByVersion[version] || []
             this.collectionsByVersion[version].push(def)
         })
+    }
+
+    registerCollections(collections : CollectionDefinitionMap) {
+        for (const [name, def] of Object.entries(collections)) {
+            this.registerCollection(name, def)
+        }
     }
 
     finishInitialization() {
