@@ -1,4 +1,4 @@
-import pickBy from 'lodash/fp/pickBy'
+import pickBy = require('lodash/fp/pickBy')
 import { StorageRegistry } from '../manager'
 import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from './../manager/types'
 
@@ -7,11 +7,11 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
     const augmentedPutObject = async (collection : string, object) => {
         const collectionDefinition = registry.collections[collection]
         
-        const objectWithoutReverseRelationships = pickBy(object,
-            (value, key) => !collectionDefinition.reverseRelationshipsByAlias[key]
-        )
+        const objectWithoutReverseRelationships = pickBy((value, key) => {
+            return !collectionDefinition.reverseRelationshipsByAlias[key]
+        }, object)
         for (const relationshipAlias in collectionDefinition.relationshipsByAlias) {
-            const relationship = collectionDefinition[relationshipAlias]
+            const relationship = collectionDefinition.relationshipsByAlias[relationshipAlias]
             if (!isChildOfRelationship(relationship)) {
                 continue
             }

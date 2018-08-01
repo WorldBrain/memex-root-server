@@ -129,6 +129,8 @@ export default class StorageRegistry {
                     pluralize(relationship.connects[0]),
                 ]
 
+                def.fields[relationship.fieldNames[0]] = {type: 'foreign-key'}
+                def.fields[relationship.fieldNames[1]] = {type: 'foreign-key'}
                 def.indices.push({field: relationship.fieldNames})
             } else if (isChildOfRelationship(relationship)) {
                 relationship.sourceCollection = name
@@ -142,6 +144,7 @@ export default class StorageRegistry {
                 }
 
                 relationship.fieldName = relationship.fieldName || `${relationship.alias}Rel`
+                def.fields[relationship.fieldName] = {type: 'foreign-key'}
                 def.indices.push({field: relationship.fieldName})
             } else {
                 throw new Error("Invalid relationship detected: " + JSON.stringify(relationship))
