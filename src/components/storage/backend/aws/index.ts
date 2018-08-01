@@ -1,7 +1,7 @@
 import * as dynongo from 'dynongo'
 import { StorageRegistry } from '../../manager'
 import { CollectionDefinition } from '../../manager/types'
-import { StorageBackend } from '../types'
+import { StorageBackend } from '../../manager/types'
 
 export type DynamoManagement = {createTable : Function, deleteTable : Function}
 

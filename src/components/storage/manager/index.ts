@@ -1,6 +1,5 @@
 import StorageRegistry from './registry'
-import { StorageBackend, PutResult } from '../backend/types'
-
+import { StorageBackend, PutResult } from './types'
 export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
@@ -12,12 +11,13 @@ export interface StorageCollectionMap {
     [name : string] : StorageCollection
 }
 
-export class StorageManager {
+export default class StorageManager {
     public registry = new StorageRegistry()
     public backend : StorageBackend
 
     constructor({backend} : {backend : StorageBackend}) {
         this.backend = backend
+        this.backend.configure({registry: this.registry})
     }
 
     collection(name : string) : StorageCollection {

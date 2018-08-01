@@ -8,12 +8,11 @@ export class UserStorage implements StorageModule {
         user: {
             version: new Date(2018, 7, 31),
             fields: {
-                id: {type: 'string'},
                 identifier: {type: 'string'},
-                passwordHash: {type: 'string', optional: true}
+                passwordHash: {type: 'string', optional: true},
+                isActive: {type: 'boolean'},
             },
             indices: [
-                {field: 'id', pk: true},
                 {field: 'identifier'},
             ]
         },
@@ -21,25 +20,27 @@ export class UserStorage implements StorageModule {
             version: new Date(2018, 7, 31),
             fields: {
                 email: {type: 'string'},
+                isVerified: {type: 'boolean'},
+                isPrimary: {type: 'boolean'},
             },
             relationships: [
-                {childOf: 'user'}
+                {childOf: 'user', reverseAlias: 'emails'}
             ],
             indices: [
-                {field: [{relationship: 'user'}, 'email']}
+                {field: [{relationship: 'user'}, 'email'], unique: true}
             ]
         },
         userEmailVerificationCode: {
             version: new Date(2018, 7, 31),
             fields: {
-                verificationCode: {type: 'string'},
-                verificationCodeExpiry: {type: 'datetime'}
+                code: {type: 'random-key'},
+                expiry: {type: 'datetime'}
             },
             relationships: [
-                {singleChildOf: 'userEmail'}
+                {singleChildOf: 'userEmail', reverseAlias: 'verificationCode'}
             ],
             indices: [
-                {field: 'verificationCode'}
+                {field: 'verificationCode', unique: true}
             ]
         }
     }
@@ -47,8 +48,26 @@ export class UserStorage implements StorageModule {
     constructor(private collections : StorageCollectionMap) {
     }
 
-    async registerUser(user : User) {
+    async registerUser({email, passwordHash} : {email, passwordHash : string}) {
+        const {object: user} = await this.collections.users.putObject({
+            identifier: `email:${email}`,
+            passwordHash,
+            isActive: false,
+            userEmails: [
+                {
+                    email,
+                    isVerified: false,
+                    isPrimary: true,
+                    verificationCode: {
+                        expires: Date.now() + 1000 * 60 * 60 * 24
+                    }
+                }
+            ]
+        })
 
+        return {
+            emailVerificationCode: user.emails[0].verificationCode.code
+        }
     }
 
     async findByIdentifier(identifier : string) : Promise<User | null> {
