@@ -42,6 +42,17 @@ export class UserStorage implements StorageModule {
             indices: [
                 {field: 'verificationCode', unique: true}
             ]
+        },
+        userAccountLink: {
+            version: new Date(2018, 7, 31),
+            fields: {
+                provider: {type: 'string'}
+            },
+            relationships: [
+                {singleChildOf: 'user'}
+            ],
+            indices: [
+            ]
         }
     }
 
@@ -70,7 +81,24 @@ export class UserStorage implements StorageModule {
         }
     }
 
+    async verifyUserEmail({code} : {code : string}) : Promise<{identifier : string, email : string} | null> {
+        const verificationCode = await this.collections.userEmailVerificationCode.findOneObject({code})
+        if (!verificationCode) {
+            return null
+        }
+
+        const userEmail = await this.collections.userEmail.findOneObject({id: verificationCode['userEmail']})        
+        const user = await this.collections.user.findOneObject({id: userEmail['user']})
+        
+        const isPrimary = !user['isActive'] ? {isPrimary: true} : {}
+        await this.collections.userEmail.updateOneObject(userEmail, {isActive: true, ...isPrimary})
+        await this.collections.users.updateOneObject(user, {isActive: true})
+        await this.collections.userEmailVerificationCode.deleteOneObject(verificationCode)
+
+        return {identifier: user['identifier'], email: userEmail['email']}
+    }
+
     async findByIdentifier(identifier : string) : Promise<User | null> {
-        return await this.collections.users.findObject<User>({identifier})
+        return await this.collections.users.findOneObject<User>({identifier})
     }
 }

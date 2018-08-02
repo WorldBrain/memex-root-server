@@ -18,11 +18,23 @@ export default function createApp(
   }
 
   passport.serializeUser(function(user, done) {
-    done(null, 'none')
+    if (user['id']) {
+      done(null, `local.id:${user['id']}`)
+    } else if(user['identifier']) {
+      done(null, user['identifier'])
+
+    }
   })
   
-  passport.deserializeUser(function(id, done) {
-    done(null, id);
+  passport.deserializeUser((identifier : string, done) => {
+    const [provider, id] = identifier.split(':')
+    if (provider === 'local.id') {
+      done(null, {id})
+    } else if(provider === 'google') {
+      done(null, {identifier})
+    } else {
+      done(new Error('Invalid serialized user found in session'))
+    }
   })
   passportStrategies.forEach(strategy => {
     passport.use(strategy)

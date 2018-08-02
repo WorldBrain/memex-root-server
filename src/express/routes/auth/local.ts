@@ -10,6 +10,8 @@ export function authLocalRegister(appControllers : AppControllers) {
 
 export function authLocalLogin(appControllers : AppControllers) {
   return async function({req, res, next} : ExpressReqRes) {
+    // TODO: Rate-limit this route
+
     passport.authenticate('local', <any>{
         session: false,
     })(req, res, next)

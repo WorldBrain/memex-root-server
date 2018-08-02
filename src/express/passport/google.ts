@@ -7,7 +7,13 @@ export function createGoogleStrategy(config : ProviderConfiguration) {
         clientSecret: config.secret,
         callbackURL: config.callbackUrl,
       }, (accessToken, refreshToken, params, profile, done) => {
-        return done(null, {profile, accessToken, refreshToken, expiresInSeconds: params.expires_in})
+        return done(null, {
+          identifier: `google:${profile.id}`,
+          profile,
+          accessToken,
+          refreshToken,
+          expiresInSeconds: params.expires_in
+        })
 
         //    User.findOrCreate({ googleId: profile.id }, function (err, user) {
         //      return done(err, user);
