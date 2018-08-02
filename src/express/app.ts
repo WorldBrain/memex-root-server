@@ -65,6 +65,7 @@ export default function createApp(
   app.get('/auth/register', route(routes.authLocalRegister))
   app.get('/auth/login', route(routes.authLocalLogin))
   app.get('/auth/check', route(routes.authLocalCheck))
+  app.get('/email/verify', route(routes.authEmailVerify))
   app.get('/auth/google', route(routes.authGoogleEntry))
   app.get('/auth/google/callback', route(routes.authGoogleCallback))
   app.post('/auth/google/refresh', route(routes.authGoogleRefresh))

@@ -2,6 +2,7 @@ import { User } from "../../../types/auth"
 import { StorageCollectionMap } from '../manager'
 import { CollectionDefinitionMap } from "../manager/types"
 import { StorageModule } from "./types"
+import { PasswordHasher } from "../../password-hasher";
 
 export class UserStorage implements StorageModule {
     collectionDefinitions : CollectionDefinitionMap = {
@@ -60,8 +61,14 @@ export class UserStorage implements StorageModule {
     }
 
     async registerUser({email, passwordHash} : {email, passwordHash : string}) {
+        const identifier = `email:${email}`
+        const existingUser = await this.collections.users.findOneObject({identifier})
+        if (existingUser) {
+            return { error: 'exists' }
+        }
+
         const {object: user} = await this.collections.users.putObject({
-            identifier: `email:${email}`,
+            identifier: identifier,
             passwordHash,
             isActive: false,
             userEmails: [
@@ -81,10 +88,13 @@ export class UserStorage implements StorageModule {
         }
     }
 
-    async authenticateUser({email, passwordHash} : {email : string, passwordHash : string}) {
-        const user = await this.collections.users.findOneObject({identifier: `email:${email}`, passwordHash, isActive: true})
+    async authenticateUser({email, password, passwordHasher} : {email : string, password : string, passwordHasher : PasswordHasher}) {
+        const user = await this.collections.users.findOneObject({identifier: `email:${email}`, isActive: true})
         if (!user) {
             return {error: 'not-found'}
+        }
+        if (!await passwordHasher.compare({password, hash: user['passwordHash']})) {
+            return {error: 'invalid-password'}
         }
         if (!user['isActive']) {
             return {error: 'not-active'}

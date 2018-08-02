@@ -4,7 +4,8 @@ import { AppControllers } from '../../../controllers'
 
 export function authLocalRegister(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
-    
+    const { error } = await appControllers.authLocalRegister({email: req.body.email, password: req.body.password})
+    res.json({success: !error, error: error || null})
   }
 }
 
@@ -20,6 +21,6 @@ export function authLocalLogin(appControllers : AppControllers) {
 
 export function authLocalCheck(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
-    
+    res.json({authenticated: !!req.user.id})
   }
 }

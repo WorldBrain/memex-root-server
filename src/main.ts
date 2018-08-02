@@ -8,7 +8,7 @@ import { createAppControllers } from './controllers'
 import { getSettings } from './options'
 import { executeDevShortcuts } from './dev-shortcuts'
 import { createHttpServer } from './server'
-import { createPassportStrategies } from './express/passport';
+import { createPassportStrategies } from './express/passport'
 
 
 export async function createSetup() {
@@ -16,12 +16,14 @@ export async function createSetup() {
 
   const components = await createAppComponents({
     baseUrl: settings.baseUrl,
-    tier: settings.tier
+    tier: settings.tier,
+    awsSesRegion: settings.awsSesRegion
   })
   const controllers = createAppControllers(components, settings)
   const routes = createAppRoutes(controllers)
   const passportStrategies = createPassportStrategies({
     userStorage: components.storage.users,
+    passwordHasher: components.passwordHasher,
     providerConfigurations: {
       google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
     },

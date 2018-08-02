@@ -1,14 +1,22 @@
+import * as aws from 'aws-sdk'
 import { DeploymentTier } from '../options'
+import { Mailer, FilesystemMailer, NodeMailer } from './mailer';
 import { Storage } from './storage'
-import { StorageManager } from './storage/manager'
+import StorageManager from './storage/manager'
 import { AwsStorageBackend, createLocalAwsStorageBackend } from './storage/backend/aws'
+import { PasswordHasher } from './password-hasher'
+import { VerificationEmailGenerator, StaticVerificationEmailGenerator } from './verification-email-generator'
 
 export interface AppComponents {
   storage : Storage
+  mailer : Mailer
+  passwordHasher : PasswordHasher
+  verificationEmailGenerator : VerificationEmailGenerator
 }
 
 export interface AppComponentsConfig {
   baseUrl : string
+  awsSesRegion : string
   overrides? : object
   tier : DeploymentTier
 }
@@ -33,5 +41,20 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
       const storageManager = new StorageManager({backend})
       return new Storage({storageManager})
     }),
+    mailer: allowOverride('mailer', () => {
+      const mailer =
+        config.tier === 'development'
+        ? new FilesystemMailer('/tmp/')
+        : new NodeMailer({
+          SES: new aws.SES({
+              apiVersion: '2010-12-01',
+              region: config.awsSesRegion
+          })
+      })
+
+      return mailer
+    }),
+    passwordHasher: allowOverride('passwordHasher', () => new PasswordHasher({saltWorkFactor: 10})),
+    verificationEmailGenerator: allowOverride('verificationEmailGenerator', () => new StaticVerificationEmailGenerator())
   }
 }

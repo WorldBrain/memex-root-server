@@ -57,10 +57,15 @@ export function getCookieSecret({tier}) {
     return secret
 }
 
+export function getAwsSesRegion() {
+    return process.env.AWS_SES_REGION || 'us-east-1'
+}
+
 export function getSettings() {
     const tier = getDeploymentTier()
     return {
         tier,
+        awsSesRegion: getAwsSesRegion(),
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         cookieSecret: getCookieSecret({tier}),
