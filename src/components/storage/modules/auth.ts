@@ -81,9 +81,23 @@ export class UserStorage implements StorageModule {
         }
     }
 
+    async authenticateUser({email, passwordHash} : {email : string, passwordHash : string}) {
+        const user = await this.collections.users.findOneObject({identifier: `email:${email}`, passwordHash, isActive: true})
+        if (!user) {
+            return {error: 'not-found'}
+        }
+        if (!user['isActive']) {
+            return {error: 'not-active'}
+        }
+        return {user}
+    }
+
     async verifyUserEmail({code} : {code : string}) : Promise<{identifier : string, email : string} | null> {
         const verificationCode = await this.collections.userEmailVerificationCode.findOneObject({code})
         if (!verificationCode) {
+            return null
+        }
+        if (verificationCode['expires'] <= Date.now()) {
             return null
         }
 

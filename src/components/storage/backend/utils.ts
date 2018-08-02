@@ -2,7 +2,7 @@ import pickBy = require('lodash/fp/pickBy')
 import { StorageRegistry } from '../manager'
 import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from './../manager/types'
 
-// Returns a super-putObject which automatically creates new objects for reverse relationships
+// Returns a super-putObject which automatically creates new objects for reverse relationships and handles custom field types
 export function augmentPutObject(rawPutObject, {registry} : {registry : StorageRegistry}) {
     const augmentedPutObject = async (collection : string, object) => {
         const collectionDefinition = registry.collections[collection]
@@ -20,6 +20,11 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
             if (value.id) {
                 objectWithoutReverseRelationships[relationshipAlias] = value.id
             }
+        }
+
+        for (const fieldName of collectionDefinition.fieldsWithCustomType) {
+            objectWithoutReverseRelationships[fieldName] =
+                collectionDefinition.fields[fieldName].fieldObject.prepareForStorage(objectWithoutReverseRelationships[fieldName])
         }
 
         const {object: insertedObject} = await rawPutObject(collection, objectWithoutReverseRelationships)

@@ -1,5 +1,6 @@
 import StorageRegistry from './registry'
 import { StorageBackend, PutSingleResult } from './types'
+import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
@@ -17,10 +18,11 @@ export interface StorageCollectionMap {
 }
 
 export default class StorageManager {
-    public registry = new StorageRegistry()
+    public registry : StorageRegistry
     public backend : StorageBackend
 
-    constructor({backend} : {backend : StorageBackend}) {
+    constructor({backend, fieldTypes} : {backend : StorageBackend, fieldTypes? : FieldTypeRegistry}) {
+        this.registry = new StorageRegistry({fieldTypes: fieldTypes || createDefaultFieldTypeRegistry()})
         this.backend = backend
         this.backend.configure({registry: this.registry})
     }

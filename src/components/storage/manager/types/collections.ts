@@ -29,6 +29,7 @@ export interface CollectionDefinition {
     relationships?: Relationships
     relationshipsByAlias?: RelationshipsByAlias
     reverseRelationshipsByAlias?: RelationshipsByAlias
+    fieldsWithCustomType?: string[]
     migrate?: MigrationRunner
     name?: string
     watch?: boolean // should we include this in the 'changing' event? defaults to true

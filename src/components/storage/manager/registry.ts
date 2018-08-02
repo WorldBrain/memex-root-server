@@ -8,7 +8,7 @@ import {
 } from './types/relationships'
 import { CollectionDefinitions, CollectionDefinition, CollectionDefinitionMap } from './types/collections'
 import { IndexSourceField } from './types/indices'
-import FIELD_TYPES from './fields'
+import { FieldTypeRegistry } from './fields'
 
 export interface RegistryCollections {
     [collName: string]: CollectionDefinition
@@ -21,6 +21,11 @@ export interface RegistryCollectionsVersionMap {
 export default class StorageRegistry {
     public collections: RegistryCollections = {}
     public collectionsByVersion: RegistryCollectionsVersionMap = {}
+    private fieldTypes : FieldTypeRegistry
+
+    constructor({fieldTypes} : {fieldTypes : FieldTypeRegistry}) {
+        this.fieldTypes = fieldTypes
+    }
 
     registerCollection(name: string, defs: CollectionDefinitions) {
         if (!(defs instanceof Array)) {
@@ -31,15 +36,8 @@ export default class StorageRegistry {
             this.collections[name] = def
             def.name = name
 
-            const fields = def.fields
-            Object.entries(fields).forEach(([fieldName, fieldDef]) => {
-                const FieldClass = FIELD_TYPES[fieldDef.type]
-                
-                if (FieldClass) {
-                    fieldDef.fieldObject = new FieldClass(fieldDef)
-                }
-            })
-
+            this._preprocessFieldTypes(def)
+            this._autoAssignCollectionPk(def)
             this._preprocessCollectionRelationships(name, def)
             this._preprocessCollectionIndices(name, def)
 
@@ -60,13 +58,24 @@ export default class StorageRegistry {
         this._connectReverseRelationships()
     }
 
+    _preprocessFieldTypes(def: CollectionDefinition) {
+        const fields = def.fields
+        Object.entries(fields).forEach(([fieldName, fieldDef]) => {
+            const FieldType = this.fieldTypes.fieldTypes[fieldDef.type]
+            if (!FieldType) {
+                return
+            }
+
+            fieldDef.fieldObject = new FieldType()
+            def.fieldsWithCustomType.push(fieldName)
+        })
+    }
+
     /**
      * Handles mutating a collection's definition to flag all fields that are declared to be
      * indexable as indexed fields.
      */
     _preprocessCollectionIndices(collectionName : string, def: CollectionDefinition) {
-        this._autoAssignCollectionPk(def)
-
         const flagField = (fieldName : string, indexDefIndex : number) => {
             if (!def.fields[fieldName]) {
                 throw new Error(`Flagging field ${fieldName} of collection ${collectionName} as index, but field does not exist`)
