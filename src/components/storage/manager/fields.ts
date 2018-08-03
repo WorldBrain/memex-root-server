@@ -16,13 +16,18 @@ export abstract class Field {
 
 export class RandomKeyField extends Field {
     primitiveType = <PrimitiveFieldType>'string'
+    length = 20
 
     async prepareForStorage(input) : Promise<string> {
         if (input) {
             return input
         }
 
-        return (await crypto.randomBytesAsync(20)).toString('hex')
+        return await this.generateCode()
+    }
+
+    async generateCode() {
+        return (await crypto.randomBytesAsync(this.length)).toString('hex')
     }
 }
 
@@ -31,14 +36,14 @@ export class UrlField extends Field {
 }
 
 export class FieldTypeRegistry {
-    public fieldTypes : {[name : string] : typeof Field} = {}
+    public fieldTypes : {[name : string] : {new () : Field}} = {}
 
-    registerType(name : string, type : typeof Field) {
+    registerType(name : string, type : {new () : Field}) {
         this.fieldTypes[name] = type
         return this
     }
 
-    registerTypes(fieldTypes : {[name : string] : typeof Field}) {
+    registerTypes(fieldTypes : {[name : string] : {new () : Field}}) {
         Object.assign(this.fieldTypes, fieldTypes)
         return this
     }

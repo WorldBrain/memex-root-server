@@ -1,13 +1,15 @@
 import pickBy = require('lodash/fp/pickBy')
-import { StorageRegistry } from '../manager'
-import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from './../manager/types'
+import { StorageRegistry } from '..'
+import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from '../types'
 
 // Returns a super-putObject which automatically creates new objects for reverse relationships and handles custom field types
 export function augmentPutObject(rawPutObject, {registry} : {registry : StorageRegistry}) {
     const augmentedPutObject = async (collection : string, object, options?) => {
         const collectionDefinition = registry.collections[collection]
         
-        const objectWithoutReverseRelationships = pickBy((value, key) => {
+        // lonelyObject is shorter than objectWithoutRelationships
+        // https://imgur.com/gallery/DaJpmyg
+        const lonelyObject = pickBy((value, key) => {
             return !collectionDefinition.reverseRelationshipsByAlias[key]
         }, object)
         for (const relationshipAlias in collectionDefinition.relationshipsByAlias) {
@@ -16,18 +18,20 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
                 continue
             }
 
-            const value = objectWithoutReverseRelationships[relationshipAlias]
+            const value = lonelyObject[relationshipAlias]
             if (value.id) {
-                objectWithoutReverseRelationships[relationshipAlias] = value.id
+                lonelyObject[relationshipAlias] = value.id
             }
         }
 
-        for (const fieldName of collectionDefinition.fieldsWithCustomType) {
-            objectWithoutReverseRelationships[fieldName] =
-                collectionDefinition.fields[fieldName].fieldObject.prepareForStorage(objectWithoutReverseRelationships[fieldName])
-        }
+        await Promise.all(collectionDefinition.fieldsWithCustomType.map(
+            async fieldName => {
+                const fieldDef = collectionDefinition.fields[fieldName]
+                lonelyObject[fieldName] = await fieldDef.fieldObject.prepareForStorage(lonelyObject[fieldName])
+            }
+        ))
 
-        const {object: insertedObject} = await rawPutObject(collection, objectWithoutReverseRelationships, options)
+        const {object: insertedObject} = await rawPutObject(collection, lonelyObject, options)
 
         for (const reverseRelationshipAlias in collectionDefinition.reverseRelationshipsByAlias) {
             const reverseRelationship = collectionDefinition.reverseRelationshipsByAlias[reverseRelationshipAlias]

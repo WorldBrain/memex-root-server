@@ -1,4 +1,4 @@
-import { VerificationEmailGenerator } from './../../components/verification-email-generator';
+import { VerificationEmailGenerator } from '../../components/verification-email-generator';
 import { PasswordHasher } from '../../components/password-hasher'
 import { UserStorage } from '../../components/storage/modules/auth'
 import { Mailer } from '../../components/mailer'

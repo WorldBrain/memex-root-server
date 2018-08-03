@@ -3,7 +3,7 @@ import { StorageRegistry } from '../../manager'
 import { CollectionDefinition, CollectionDefinitionMap, isChildOfRelationship, isConnectsRelationship } from "../../manager/types"
 
 const FIELD_TYPE_MAP : {[name : string] : any} = {
-    'auto-pk': {type: Sequelize.INTEGER, autoIncrement: true},
+    'auto-pk': {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
     'text': 'TEXT',
     'json': 'JSON',
     'datetime': 'DATE',
@@ -21,7 +21,7 @@ export function collectionToSequelizeModel({definition, registry} : {definition 
         const primitiveType = fieldDefinition.fieldObject ? fieldDefinition.fieldObject.primitiveType : fieldDefinition.type
         const modelFieldDef = typeof FIELD_TYPE_MAP[primitiveType] === 'string'
             ? {type: Sequelize[FIELD_TYPE_MAP[primitiveType]]}
-            : {...model[fieldName]}
+            : {...FIELD_TYPE_MAP[primitiveType]}
         // modelFieldDef.field = fieldDefinition.fieldName
 
         model[fieldName] = modelFieldDef
@@ -35,9 +35,13 @@ export function connectSequelizeModels({registry, models} : {registry : StorageR
         for (const relationship of collectionDefinition.relationships) {
             if (isChildOfRelationship(relationship)) {
                 if (relationship.single) {
-                    models[relationship.targetCollection].hasOne(models[collectionName])
+                    models[relationship.targetCollection].hasOne(models[collectionName], {
+                        foreignKey: relationship.targetCollection
+                    })
                 } else {
-                    models[relationship.targetCollection].hasMany(models[collectionName])
+                    models[relationship.targetCollection].hasMany(models[collectionName], {
+                        foreignKey: relationship.targetCollection
+                    })
                 }
             } else if (isConnectsRelationship(relationship)) {
                 models[relationship.connects[0]].belongsToMany(relationship.connects[1], {through: collectionName})

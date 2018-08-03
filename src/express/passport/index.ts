@@ -1,4 +1,4 @@
-import { UserStorage } from './../../components/storage/modules/auth'
+import { UserStorage } from '../../components/storage/modules/auth'
 import { PasswordHasher } from '../../components/password-hasher';
 import { ProviderConfigurations } from "./types"
 import { createGoogleStrategy } from "./google"

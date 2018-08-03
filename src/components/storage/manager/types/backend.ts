@@ -23,7 +23,20 @@ export abstract class StorageBackend {
     async cleanup() : Promise<any> {}
     async migrate() : Promise<any> {}
 
-    abstract putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult>
+    async putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult> {
+        const definition = this.registry.collections[collection]
+        if (typeof definition.pkIndex === 'string') {
+            if (object[definition.pkIndex]) {
+                return await this.updateObject(collection, {[definition.pkIndex]: object[definition.pkIndex]}, options)
+            } else {
+                return await this.createObject(collection, object, options)
+            }
+        } else {
+            throw new Error('Updating putObject() with compound pks is not supported yet')
+        }
+    }
+
+    abstract async createObject(collection : string, object, options? : PutSingleOptions)
     
     abstract findObjects<T>(collection : string, query, options?) : Promise<Array<T>>
     async findObject<T>(collection : string, query, options?) : Promise<T | null> {
@@ -39,7 +52,7 @@ export abstract class StorageBackend {
     async updateObject(collection : string, object, updates, options? : UpdateSingleOptions) : Promise<UpdateSingleResult> {
         const definition = this.registry.collections[collection]
         if (typeof definition.pkIndex === 'string') {
-            return await this.updateObject(collection, {[definition.pkIndex]: object[definition.pkIndex]}, updates, options)
+            return await this.updateObjects(collection, {[definition.pkIndex]: object[definition.pkIndex]}, updates, options)
         } else {
             throw new Error('Updating single objects with compound pks is not supported yet')
         }

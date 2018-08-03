@@ -1,53 +1,10 @@
-import { expect } from 'chai';
-import StorageManager from './'
-import StorageRegistry from './registry';
-import { StorageBackend } from '../manager/types'
-import { augmentPutObject } from '../backend/utils'
-import { inspect } from 'util';
+import StorageManager from '.'
+import { StorageBackend } from './types'
 
-interface FakeStorageBackendConfig {
-    idGenerator: (collection, object, options) => string
-}
-class FakeStorageBackend extends StorageBackend {
-    public putOperations: { object, id }[] = []
-
-    constructor(public config: FakeStorageBackendConfig) {
-        super()
-    }
-
-    configure({ registry }: { registry: StorageRegistry }) {
-        super.configure({ registry })
-
-        this.putObject = augmentPutObject(this.putObject.bind(this), { registry })
-    }
-
-    async putObject(collection: string, object, options) {
-        const pkIndex = this.registry.collections[collection].pkIndex
-        if (typeof pkIndex !== 'string') {
-            throw new Error("Oops, we don't support compount pk's yet...")
-        }
-
-        const id = this.config.idGenerator(collection, object, options)
-        this.putOperations.push({ object, id })
-        return { object: { ...object, [pkIndex]: id } }
-    }
-
-    async findObject() {
-        return null
-    }
-}
-
-describe('StorageManager integration tests', () => {
-    it('should handle putObjects with childOf relationships correctly', async () => {
-        const ids = {}
-        const backend = new FakeStorageBackend({
-            idGenerator: collection => {
-                ids[collection] = ids[collection] || 0
-                return `${collection}-${(++ids[collection]).toString()}`
-            }
-        })
-        const storageManager = new StorageManager({ backend })
-        storageManager.registry.registerCollection('user', {
+export function createTestStorageManager(backend : StorageBackend) {
+    const storageManager = new StorageManager({ backend })
+    storageManager.registry.registerCollections({
+        user: {
             version: new Date(2018, 7, 31),
             fields: {
                 identifier: { type: 'string' },
@@ -58,8 +15,8 @@ describe('StorageManager integration tests', () => {
                 { field: 'id', pk: true },
                 { field: 'identifier' },
             ]
-        })
-        storageManager.registry.registerCollection('userEmail', {
+        },
+        userEmail: {
             version: new Date(2018, 7, 31),
             fields: {
                 email: { type: 'string' },
@@ -72,8 +29,8 @@ describe('StorageManager integration tests', () => {
             indices: [
                 { field: [{ relationship: 'user' }, 'email'], unique: true }
             ]
-        })
-        storageManager.registry.registerCollection('userEmailVerificationCode', {
+        },
+        userEmailVerificationCode: {
             version: new Date(2018, 7, 31),
             fields: {
                 code: { type: 'random-key' },
@@ -85,71 +42,50 @@ describe('StorageManager integration tests', () => {
             indices: [
                 { field: 'code', unique: true }
             ]
-        })
-        storageManager.registry.finishInitialization()
-
-        const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
-        const { object: user } = await storageManager.collection('user').putObject({
-            identifier: `email:${email}`,
-            passwordHash,
-            isActive: false,
-            emails: [
-                {
-                    email,
-                    isVerified: false,
-                    isPrimary: true,
-                    verificationCode: {
-                        expires
-                    }
-                }
-            ]
-        })
-
-        expect(user).to.deep.equal({
-            id: 'user-1',
-            identifier: `email:${email}`,
-            passwordHash,
-            isActive: false,
-            emails: [
-                {
-                    id: 'userEmail-1',
-                    user: 'user-1',
-                    email,
-                    isVerified: false,
-                    isPrimary: true,
-                    verificationCode: {
-                        id: 'userEmailVerificationCode-1',
-                        userEmail: 'userEmail-1',
-                        expires
-                    }
-                }
-            ]
-        })
-        expect(backend.putOperations).to.deep.equal([
-            {
-                id: 'user-1',
-                object: {
-                    identifier: 'email:blub@bla.com',
-                    passwordHash: 'hashed!',
-                    isActive: false
-                },
-            },
-            {
-                id: 'userEmail-1',
-                object:{
-                    user: 'user-1',
-                    email: 'blub@bla.com',
-                    isVerified: false,
-                    isPrimary: true,
-                },
-            },
-            {
-                id: 'userEmailVerificationCode-1',
-                object: {
-                    userEmail: 'userEmail-1',
-                    expires: expires,
-                },
-            }]
-        )
+        }
     })
-})
+    storageManager.finishInitialization()
+
+    return storageManager
+}
+
+export function generateTestObject(
+    {email = 'blub@bla.com', passwordHash = 'hashed!', expires} :
+    {email : string, passwordHash : string, expires : number})
+{
+    return {
+        identifier: `email:${email}`,
+        passwordHash,
+        isActive: false,
+        emails: [
+            {
+                email,
+                isVerified: false,
+                isPrimary: true,
+                verificationCode: {
+                    expires
+                }
+            }
+        ]
+    }
+}
+
+export function testStorageBackend(backendCreator : () => Promise<StorageBackend>) {
+    let backend : StorageBackend
+    let storageManager : StorageManager
+
+    beforeEach(async () => {
+        backend = await backendCreator()
+        storageManager = createTestStorageManager(backend)
+        await backend.migrate()
+    })
+
+    afterEach(async () => {
+        await backend.cleanup()
+    })
+
+    it('should do basic CRUD ops', async () => {
+        const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
+        const { object: user } = await storageManager.collection('user').putObject(generateTestObject({email, passwordHash, expires}))
+    })
+}

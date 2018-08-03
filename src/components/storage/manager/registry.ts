@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import * as pluralize from 'pluralize'
 import {
     isConnectsRelationship,
@@ -18,12 +19,14 @@ export interface RegistryCollectionsVersionMap {
     [collVersion: number]: CollectionDefinition[]
 }
 
-export default class StorageRegistry {
+export default class StorageRegistry extends EventEmitter {
     public collections: RegistryCollections = {}
     public collectionsByVersion: RegistryCollectionsVersionMap = {}
-    private fieldTypes : FieldTypeRegistry
+    public fieldTypes : FieldTypeRegistry
 
     constructor({fieldTypes} : {fieldTypes : FieldTypeRegistry}) {
+        super()
+
         this.fieldTypes = fieldTypes
     }
 
@@ -46,6 +49,8 @@ export default class StorageRegistry {
                 this.collectionsByVersion[version] || []
             this.collectionsByVersion[version].push(def)
         })
+
+        this.emit('registered-collection', {collection: this.collections[name]})
     }
 
     registerCollections(collections : CollectionDefinitionMap) {
@@ -54,11 +59,14 @@ export default class StorageRegistry {
         }
     }
 
-    finishInitialization() {
+    _finishInitialization() {
         this._connectReverseRelationships()
+        this.emit('initialized')
     }
 
     _preprocessFieldTypes(def: CollectionDefinition) {
+        def.fieldsWithCustomType = []
+
         const fields = def.fields
         Object.entries(fields).forEach(([fieldName, fieldDef]) => {
             const FieldType = this.fieldTypes.fieldTypes[fieldDef.type]

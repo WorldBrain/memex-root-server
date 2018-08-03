@@ -1,4 +1,4 @@
-import { SESSION_KEYS } from './../../constants';
+import { SESSION_KEYS } from '../../constants';
 import * as passport from 'passport'
 import { ExpressReqRes } from '../../types'
 import { AppControllers } from '../../../controllers'
