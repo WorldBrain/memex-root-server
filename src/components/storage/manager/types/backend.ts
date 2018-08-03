@@ -21,6 +21,7 @@ export abstract class StorageBackend {
     }
 
     async cleanup() : Promise<any> {}
+    async migrate() : Promise<any> {}
 
     abstract putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult>
     

@@ -4,7 +4,7 @@ import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConn
 
 // Returns a super-putObject which automatically creates new objects for reverse relationships and handles custom field types
 export function augmentPutObject(rawPutObject, {registry} : {registry : StorageRegistry}) {
-    const augmentedPutObject = async (collection : string, object) => {
+    const augmentedPutObject = async (collection : string, object, options?) => {
         const collectionDefinition = registry.collections[collection]
         
         const objectWithoutReverseRelationships = pickBy((value, key) => {
@@ -27,7 +27,7 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
                 collectionDefinition.fields[fieldName].fieldObject.prepareForStorage(objectWithoutReverseRelationships[fieldName])
         }
 
-        const {object: insertedObject} = await rawPutObject(collection, objectWithoutReverseRelationships)
+        const {object: insertedObject} = await rawPutObject(collection, objectWithoutReverseRelationships, options)
 
         for (const reverseRelationshipAlias in collectionDefinition.reverseRelationshipsByAlias) {
             const reverseRelationship = collectionDefinition.reverseRelationshipsByAlias[reverseRelationshipAlias]

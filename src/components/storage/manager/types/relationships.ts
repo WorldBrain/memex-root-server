@@ -33,9 +33,18 @@ export interface ConnectsRelationship extends RelationshipType {
 export const isConnectsRelationship =
     (relationship : Relationship) : relationship is ConnectsRelationship =>
         !!(<ConnectsRelationship>relationship).connects
+export const isConnectsCollection = (relationships : Relationships) => {
+    for (const relationship of relationships) {
+        if (isConnectsRelationship(relationship)) {
+            return true
+        }
+    }
+
+    return false
+}
 export const getOtherCollectionOfConnectsRelationship =
     (relationship : ConnectsRelationship, thisCollection) =>
-        relationship.connects[relationship.connects[0] == thisCollection ? 1 : 0] 
+        relationship.connects[relationship.connects[0] == thisCollection ? 1 : 0]
 
 export type Relationship = SingleChildOfRelationship | MultipleChildOfRelationship | ConnectsRelationship
 export type Relationships = Relationship[]

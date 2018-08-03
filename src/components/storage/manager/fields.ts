@@ -1,7 +1,10 @@
 import * as bluebird from 'bluebird'
+import { PrimitiveFieldType } from './types';
 const crypto = bluebird.promisifyAll(require('crypto'))
 
-export class Field {
+export abstract class Field {
+    abstract primitiveType : PrimitiveFieldType
+
     async prepareForStorage(input) {
         return input
     }
@@ -12,6 +15,8 @@ export class Field {
 }
 
 export class RandomKeyField extends Field {
+    primitiveType = <PrimitiveFieldType>'string'
+
     async prepareForStorage(input) : Promise<string> {
         if (input) {
             return input
@@ -19,6 +24,10 @@ export class RandomKeyField extends Field {
 
         return (await crypto.randomBytesAsync(20)).toString('hex')
     }
+}
+
+export class UrlField extends Field {
+    primitiveType = <PrimitiveFieldType>'string'
 }
 
 export class FieldTypeRegistry {
@@ -38,6 +47,7 @@ export class FieldTypeRegistry {
 export function createDefaultFieldTypeRegistry() {
     const registry = new FieldTypeRegistry()
     return registry.registerTypes({
-        'random-key': RandomKeyField
+        'random-key': RandomKeyField,
+        'url': UrlField,
     })
 }

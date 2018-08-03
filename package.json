@@ -12,14 +12,11 @@
     "prepare:watch": "tsc --watch",
     "typings": "typings",
     "claudia": "claudia",
+    "tsc": "tsc",
     "prepare-and-test": "npm run prepare && mocha build/**/*.test.js",
     "test": "mocha --require ts-node/register 'src/**/*.test.ts'",
     "test:watch": "mocha -r ts-node/register 'src/**/*.test.ts' -R min --watch --watch-extensions ts",
-    "test:watch-verbose": "mocha -r ts-node/register 'src/**/*.test.ts' --watch --watch-extensions ts",
-    "deploy-assets:staging": "aws s3 sync --acl public-read --metadata Cache-Control=max-age=0 assets/build/ s3://staging.memex.link/assets/ && aws s3 sync --acl public-read --metadata Cache-Control=max-age=0 static/ s3://staging.memex.link/",
-    "deploy-assets:production": "aws s3 sync --acl public-read --metadata Cache-Control=max-age=0 assets/build/ s3://memex.link/assets/ && aws s3 sync --acl public-read --metadata Cache-Control=max-age=0 static/ s3://memex.link/",
-    "deploy-backend:staging": "eb deploy staging",
-    "deploy-backend:production": "read -p 'Deploying production version, last chance to change your mind by pressing CTRL+C. Press ENTER to continue:' -n 1 -r && eb deploy production"
+    "test:watch-verbose": "mocha -r ts-node/register 'src/**/*.test.ts' --watch --watch-extensions ts"
   },
   "betterScripts": {
     "devmon": {
@@ -77,6 +74,7 @@
     "request": "^2.85.0",
     "request-promise-native": "^1.0.5",
     "require-context": "^1.1.0",
+    "sequelize": "^4.38.0",
     "shelljs": "^0.8.2",
     "shorthash": "0.0.2",
     "shortid": "^2.2.8",
@@ -97,6 +95,7 @@
     "@types/node": "9.6.7",
     "@types/nodemailer": "^4.6.2",
     "@types/normalize-url": "^1.9.1",
+    "@types/sequelize": "^4.27.24",
     "@types/yargs": "^11.0.0",
     "autoprefixer": "^8.3.0",
     "babel-core": "^6.26.0",
@@ -132,7 +131,7 @@
     "supertest": "^3.0.0",
     "tape": "^4.7.0",
     "ts-node": "^5.0.1",
-    "typescript": "^2.8.3",
+    "typescript": "^3.0.1",
     "whatwg-fetch": "^2.0.4"
   },
   "workspaces": [

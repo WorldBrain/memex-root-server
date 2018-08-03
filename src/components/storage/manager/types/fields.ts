@@ -1,1 +1,2 @@
-export type FieldType = 'auto-pk' | 'random-key' | 'foreign-key' | 'text' | 'json' | 'datetime' | 'string' | 'url' | 'boolean'
+export type PrimitiveFieldType = 'auto-pk' | 'foreign-key' | 'text' | 'json' | 'datetime' | 'string' | 'boolean'
+export type FieldType = PrimitiveFieldType | 'random-key' | 'url'
