@@ -20,9 +20,17 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
         super.configure({registry})
         registry.once('initialized', this._createModels)
 
-        const augmentedPutObject = augmentPutObject(this.putObject.bind(this), { registry })
+        const origPutObject = this.putObject.bind(this)
         this.putObject = async (collection, object, options) => {
-            return augmentedPutObject(collection, object, options)
+            return await this.sequelize.transaction(async transaction => {
+                const putObject = async (collection, object, options) => {
+                    options = options || {}
+                    options['_transtaction'] = transaction
+                    return await origPutObject(collection, object, options)
+                }
+                const augmentedPutObject = augmentPutObject(putObject, { registry })
+                return await augmentedPutObject(collection, object, options)
+            })
         }
     }
 
@@ -42,9 +50,9 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
 
     }
 
-    async createObject(collection : string, object, options? : backend.PutSingleOptions) : Promise<backend.PutSingleResult> {
+    async createObject(collection : string, object, options? : backend.PutSingleOptions & {_transaction?}) : Promise<backend.PutSingleResult> {
         const model = this.sequelizeModels[collection]
-        const instance = await model.create(object)
+        const instance = await model.create(object, {transaction: options._transaction})
         return {object: instance.dataValues}
     }
     
@@ -54,9 +62,9 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
         return instances
     }
     
-    async updateObjects(collection : string, query, updates, options? : backend.UpdateManyOptions) : Promise<backend.UpdateManyResult> {
+    async updateObjects(collection : string, query, updates, options? : backend.UpdateManyOptions & {transaction?}) : Promise<backend.UpdateManyResult> {
         const model = this.sequelizeModels[collection]
-        await model.update(updates, {where: query})
+        await model.update(updates, {where: query}, {transaction: options._transaction})
     }
     
     async deleteObjects(collection : string, query, options? : backend.DeleteSingleOptions) : Promise<backend.DeleteManyResult> {
