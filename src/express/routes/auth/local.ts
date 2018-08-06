@@ -4,8 +4,10 @@ import { AppControllers } from '../../../controllers'
 
 export function authLocalRegister(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
+    console.log('inside route')
     const { error } = await appControllers.authLocalRegister({email: req.body.email, password: req.body.password})
     res.json({success: !error, error: error || null})
+    console.log('leaving route')
   }
 }
 

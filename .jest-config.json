@@ -1,0 +1,15 @@
+{
+    "globals": {
+        "ts-jest": {
+            "tsConfigFile": "tsconfig.jest.json"
+        }
+    },
+    "testEnvironment": "node",
+    "testMatch": ["<rootDir>/src/**/*.test.(js|ts)"],
+    "rootDir": ".",
+    "transform": {
+        "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest"
+    },
+    "modulePaths": ["<rootDir>"],
+    "moduleFileExtensions": ["js", "jsx", "ts", "tsx"]
+}

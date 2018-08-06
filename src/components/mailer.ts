@@ -6,7 +6,7 @@ export interface Mailer {
     send(mail) : Promise<any>
 }
 
-export class NodeMailer {
+export class NodeMailer implements Mailer {
     private transport : nodemailer.Transporter
 
     constructor(transportConfig) {
@@ -20,12 +20,20 @@ export class NodeMailer {
     }
 }
 
-export class FilesystemMailer {
+export class FilesystemMailer implements Mailer {
     constructor(public basePath) {
     }
 
     async send(message) {
         const filePath = path.join(this.basePath, `mail_${Date.now()}.json`)
         fs.writeFileSync(filePath, JSON.stringify(message, null, 4))
+    }
+}
+
+export class MemoryMailer implements Mailer {
+    public messages = []
+
+    async send(message) {
+        this.messages.push(message)
     }
 }

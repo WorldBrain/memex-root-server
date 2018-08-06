@@ -4,74 +4,61 @@ import { CollectionDefinitionMap } from "../manager/types"
 import { StorageModule } from "./types"
 import { PasswordHasher } from "../../password-hasher";
 
-export class UserStorage implements StorageModule {
+export class UserStorage extends StorageModule {
     collectionDefinitions : CollectionDefinitionMap = {
         user: {
             version: new Date(2018, 7, 31),
             fields: {
-                identifier: {type: 'string'},
-                passwordHash: {type: 'string', optional: true},
-                isActive: {type: 'boolean'},
+                identifier: { type: 'string' },
+                passwordHash: { type: 'string', optional: true },
+                isActive: { type: 'boolean' },
             },
             indices: [
-                {field: 'identifier'},
+                { field: 'id', pk: true },
+                { field: 'identifier' },
             ]
         },
         userEmail: {
             version: new Date(2018, 7, 31),
             fields: {
-                email: {type: 'string'},
-                isVerified: {type: 'boolean'},
-                isPrimary: {type: 'boolean'},
+                email: { type: 'string' },
+                isVerified: { type: 'boolean' },
+                isPrimary: { type: 'boolean' },
             },
             relationships: [
-                {childOf: 'user', reverseAlias: 'emails'}
+                { childOf: 'user', reverseAlias: 'emails' }
             ],
             indices: [
-                {field: [{relationship: 'user'}, 'email'], unique: true}
+                { field: [{ relationship: 'user' }, 'email'], unique: true }
             ]
         },
         userEmailVerificationCode: {
             version: new Date(2018, 7, 31),
             fields: {
-                code: {type: 'random-key'},
-                expiry: {type: 'datetime'}
+                code: { type: 'random-key' },
+                expiry: { type: 'datetime' }
             },
             relationships: [
-                {singleChildOf: 'userEmail', reverseAlias: 'verificationCode'}
+                { singleChildOf: 'userEmail', reverseAlias: 'verificationCode' }
             ],
             indices: [
-                {field: 'verificationCode', unique: true}
-            ]
-        },
-        userAccountLink: {
-            version: new Date(2018, 7, 31),
-            fields: {
-                provider: {type: 'string'}
-            },
-            relationships: [
-                {singleChildOf: 'user'}
-            ],
-            indices: [
+                { field: 'code', unique: true }
             ]
         }
-    }
-
-    constructor(private collections : StorageCollectionMap) {
     }
 
     async registerUser({email, passwordHash} : {email, passwordHash : string}) {
         const identifier = `email:${email}`
-        const existingUser = await this.collections.users.findOneObject({identifier})
+        const existingUser = await this.collections.user.findOneObject({identifier})
         if (existingUser) {
             return { error: 'exists' }
         }
 
-        const {object: user} = await this.collections.users.putObject({
+        const {object: user} = await this.collections.user.putObject({
             identifier: identifier,
             passwordHash,
             isActive: false,
-            userEmails: [
+            emails: [
                 {
                     email,
                     isVerified: false,
@@ -89,7 +76,7 @@ export class UserStorage implements StorageModule {
     }
 
     async authenticateUser({email, password, passwordHasher} : {email : string, password : string, passwordHasher : PasswordHasher}) {
-        const user = await this.collections.users.findOneObject({identifier: `email:${email}`, isActive: true})
+        const user = await this.collections.user.findOneObject({identifier: `email:${email}`, isActive: true})
         if (!user) {
             return {error: 'not-found'}
         }
@@ -116,13 +103,13 @@ export class UserStorage implements StorageModule {
         
         const isPrimary = !user['isActive'] ? {isPrimary: true} : {}
         await this.collections.userEmail.updateOneObject(userEmail, {isActive: true, ...isPrimary})
-        await this.collections.users.updateOneObject(user, {isActive: true})
+        await this.collections.user.updateOneObject(user, {isActive: true})
         await this.collections.userEmailVerificationCode.deleteOneObject(verificationCode)
 
         return {identifier: user['identifier'], email: userEmail['email']}
     }
 
     async findByIdentifier(identifier : string) : Promise<User | null> {
-        return await this.collections.users.findOneObject<User>({identifier})
+        return await this.collections.user.findOneObject<User>({identifier})
     }
 }

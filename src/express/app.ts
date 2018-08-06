@@ -1,6 +1,4 @@
 const express = require('express')
-const cookieParser = require('cookie-parser')
-const cookieEncrypter = require('cookie-encrypter')
 const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
@@ -62,8 +60,8 @@ export default function createApp(
   //   next()
   // })
   preConfigure && preConfigure(app)
-  app.get('/auth/register', route(routes.authLocalRegister))
-  app.get('/auth/login', route(routes.authLocalLogin))
+  app.post('/auth/register', route(routes.authLocalRegister))
+  app.post('/auth/login', route(routes.authLocalLogin))
   app.get('/auth/check', route(routes.authLocalCheck))
   app.get('/email/verify', route(routes.authEmailVerify))
   app.get('/auth/google', route(routes.authGoogleEntry))

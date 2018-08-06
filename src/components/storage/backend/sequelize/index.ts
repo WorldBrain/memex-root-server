@@ -71,8 +71,4 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
         const model = this.sequelizeModels[collection]
         await model.destroy({where: query})
     }
-
-    async transaction<T>(executor : () => Promise<T>) {
-        return await executor()
-    }
 }

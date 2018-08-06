@@ -5,19 +5,20 @@ import createApp from './express/app'
 import { createAppComponents } from './components'
 import { createAppRoutes } from './express/routes'
 import { createAppControllers } from './controllers'
-import { getSettings } from './options'
+import { getSettings, Settings } from './options'
 import { executeDevShortcuts } from './dev-shortcuts'
 import { createHttpServer } from './server'
 import { createPassportStrategies } from './express/passport'
 
-
-export async function createSetup() {
-  const settings = getSettings()
+export async function createSetup(settings? : Settings) {
+  settings = settings || getSettings()
 
   const components = await createAppComponents({
     baseUrl: settings.baseUrl,
     tier: settings.tier,
-    awsSesRegion: settings.awsSesRegion
+    awsSesRegion: settings.awsSesRegion,
+    mailer: settings.mailer,
+    storageBackend: settings.storageBackend,
   })
   const controllers = createAppControllers(components, settings)
   const routes = createAppRoutes(controllers)
@@ -38,8 +39,8 @@ export function createExpressApp({ routes, passportStrategies, settings }) {
 }
 
 
-export async function main() : Promise<any> {
-    const setup = await createSetup()
+export async function main(settings? : Settings) : Promise<any> {
+    const setup = await createSetup(settings)
     const app = createExpressApp(setup)
 
     process.once('SIGUSR2', async () => {

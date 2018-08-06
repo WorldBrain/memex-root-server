@@ -8,12 +8,15 @@ export function register(
     {userStorage : UserStorage, passwordHasher : PasswordHasher, mailer : Mailer, verificationEmailGenerator : VerificationEmailGenerator, baseUrl : string}
 ) {
     return async ({email, password} : {email : string, password : string}) => {
+        console.log('????')
         const passwordHash = await passwordHasher.hash(password)
         const { error, emailVerificationCode } = await userStorage.registerUser({email, passwordHash})
+        console.log('????!!!!')
         if (error) {
-            return error
+            return { error }
         }
-
+        console.log('????!!!!???')
+        
         await mailer.send({
             from: 'no-reply@memex.cloud',
             to: email,
@@ -22,5 +25,6 @@ export function register(
                 link: `${baseUrl}/email/verify?code=${emailVerificationCode}`
             }),
         })
+        console.log('????!!!!???!!!!')
     }
 }

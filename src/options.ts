@@ -3,6 +3,16 @@ import * as yargs from 'yargs'
 import { DevShortcutCommand, DevShortcutsConfig } from './dev-shortcuts/types'
 
 export type DeploymentTier = 'development' | 'staging' | 'production'
+export interface Settings {
+    tier : DeploymentTier,
+    awsSesRegion?: string
+    mailer?: 'ses' | 'fs' | 'memory'
+    storageBackend? : 'aws' | 'memory'
+    baseUrl: string
+    googleCredentials?: { id : string, secret : string }
+    cookieSecret: string
+    devOptions?: DevShortcutsConfig
+}
 
 export function parseCommandLineOptions() {
     const options = yargs
@@ -61,7 +71,7 @@ export function getAwsSesRegion() {
     return process.env.AWS_SES_REGION || 'us-east-1'
 }
 
-export function getSettings() {
+export function getSettings() : Settings {
     const tier = getDeploymentTier()
     return {
         tier,

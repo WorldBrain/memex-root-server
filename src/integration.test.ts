@@ -1,2 +1,0 @@
-describe('Global integration tests', () => {
-})
