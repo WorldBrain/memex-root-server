@@ -109,9 +109,11 @@ export class UserStorage extends StorageModule {
         return {identifier: user['identifier'], email: userEmail['email']}
     }
 
-    async findByIdentifier(identifier : string) : Promise<User | null> {
+    async findByIdentifier(identifier : string, {withPasswordHash = false} = {}) : Promise<User | null> {
         const user = await this.collections.user.findOneObject<User>({ identifier });
-        delete user['passwordHash'] // Just to prevent accidental data leaking
+        if (!withPasswordHash) {
+            delete user['passwordHash'] // Just to prevent accidental data leaking
+        }
         return user
     }
 }

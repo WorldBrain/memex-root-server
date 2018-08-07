@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { createTestStorageManager, generateTestObject } from '../index.test'
-import { FakeStorageBackend } from './index.test'
+import { createTestStorageManager, generateTestObject } from '../index.tests'
+import { FakeStorageBackend } from './index.tests'
 
 describe('StorageBackend utils', () => {
     it('should handle putObjects with childOf relationships correctly', async () => {

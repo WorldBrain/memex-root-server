@@ -19,7 +19,6 @@ export default function createApp(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 365,
     },
-    signed: true
   }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))

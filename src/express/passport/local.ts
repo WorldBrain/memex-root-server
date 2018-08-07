@@ -4,22 +4,22 @@ import { UserStorage } from '../../components/storage/modules/auth'
 import { PasswordHasher } from '../../components/password-hasher'
 
 export function createLocalStrategy({userStorage, passwordHasher} : {userStorage : UserStorage, passwordHasher : PasswordHasher}) {
-    return new LocalStrategy(async (email, password, done) => {
+    return new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password',
+    }, async (email, password, done) => {
         try {
-            console.log('ls authing!!')
-            console.log('ls authing!!')
-            console.log('ls authing!!')
-            const user = await userStorage.findByIdentifier(`email:${email}`)
+            const user = await userStorage.findByIdentifier(`email:${email}`, {withPasswordHash: true})
             if (!user) {
                 done(new Error('User not found'))
             }
 
             const isMatch = await passwordHasher.compare({password, hash: user.passwordHash})
-            console.log(email, password, user && user.passwordHash, isMatch)
             if (isMatch) {
+                delete user['passwordHash']
                 done(null, user)
             } else {
-                done(null, false, {message: 'Incorrect email or password'})
+                done(new Error('Wrong password'))
             }
         } catch (err) {
             done(err)
