@@ -22,7 +22,7 @@ export class UserStorage extends StorageModule {
             version: new Date(2018, 7, 31),
             fields: {
                 email: { type: 'string' },
-                isVerified: { type: 'boolean' },
+                isActive: { type: 'boolean' },
                 isPrimary: { type: 'boolean' },
             },
             relationships: [
@@ -110,6 +110,8 @@ export class UserStorage extends StorageModule {
     }
 
     async findByIdentifier(identifier : string) : Promise<User | null> {
-        return await this.collections.user.findOneObject<User>({identifier})
+        const user = await this.collections.user.findOneObject<User>({ identifier });
+        delete user['passwordHash'] // Just to prevent accidental data leaking
+        return user
     }
 }

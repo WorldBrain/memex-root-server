@@ -4,7 +4,7 @@ import { UserStorage } from './modules/auth'
 
 export class Storage {
     users : UserStorage
-    private _mananger : StorageManager
+    public _mananger : StorageManager
 
     constructor({storageManager} : {storageManager : StorageManager}) {
         this._mananger = storageManager

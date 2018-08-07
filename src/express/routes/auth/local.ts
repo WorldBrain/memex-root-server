@@ -4,17 +4,13 @@ import { AppControllers } from '../../../controllers'
 
 export function authLocalRegister(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
-    console.log('inside route')
     const { error } = await appControllers.authLocalRegister({email: req.body.email, password: req.body.password})
     res.json({success: !error, error: error || null})
-    console.log('leaving route')
   }
 }
 
 export function authLocalLogin(appControllers : AppControllers) {
   return async function({req, res, next} : ExpressReqRes) {
-    // TODO: Rate-limit this route
-
     passport.authenticate('local', <any>{
         session: false,
     })(req, res, next)
@@ -23,6 +19,6 @@ export function authLocalLogin(appControllers : AppControllers) {
 
 export function authLocalCheck(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
-    res.json({authenticated: !!req.user.id})
+    res.json({authenticated: req.user ? !!req.user.id : false})
   }
 }

@@ -10,8 +10,19 @@ export type UpdateSingleOptions = any
 export type UpdateSingleResult = any
 export type DeleteSingleOptions = any
 export type DeleteSingleResult = any
-export type DeleteManyOptions = any
+export type DeleteManyOptions = {limit? : number}
 export type DeleteManyResult = any
+
+export class DeletionTooBroadError extends Error {
+    public deletionTooBroad = true
+
+    constructor(public collection : string, public query: any, public limit : number, public actual : number) {
+        super(
+            `You wanted to delete only ${limit} objects from the ${collection} collection, but you almost deleted ${actual}!` +
+            `Phew, that was close, you owe me a beer! Oh, and you can find the query you tried to execute as the .query property of this error.`
+        )
+    }
+}
 
 export abstract class StorageBackend {
     protected registry : StorageRegistry
@@ -58,8 +69,13 @@ export abstract class StorageBackend {
         }
     }
     
-    abstract deleteObjects(collection : string, query, options? : DeleteSingleOptions) : Promise<DeleteManyResult>
-    async deleteObject(collection : string, object, options? : DeleteManyOptions) : Promise<DeleteSingleResult> {
-
+    abstract deleteObjects(collection : string, query, options? : DeleteManyOptions) : Promise<DeleteManyResult>
+    async deleteObject(collection : string, object, options? : DeleteSingleOptions) : Promise<DeleteSingleResult> {
+        const definition = this.registry.collections[collection]
+        if (typeof definition.pkIndex === 'string') {
+            await this.deleteObjects(collection, {[definition.pkIndex]: object[definition.pkIndex]}, {...(options || {}), limit: 1})
+        } else {
+            throw new Error('Updating single objects with compound pks is not supported yet')
+        }
     }
 }

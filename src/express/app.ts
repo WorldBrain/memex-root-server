@@ -1,4 +1,5 @@
 const express = require('express')
+const cookieParser = require('cookie-parser')
 const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
@@ -8,6 +9,30 @@ export default function createApp(
   {routes, preConfigure, passportStrategies, cookieSecret, allowUndefinedRoutes = false} :
   {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], cookieSecret : string, allowUndefinedRoutes? : boolean}
 ) {
+  _configurePassport(passportStrategies)
+  
+  const app = express()
+  // app.use(cookieParser())
+  app.use(cookieSession({
+    name: 'session',
+    secret: cookieSecret,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365,
+    },
+    signed: true
+  }))
+  app.use(bodyParser.json())
+  app.use(bodyParser.urlencoded({ extended: false }))
+  app.use(passport.initialize())
+  app.use(passport.session())
+
+  preConfigure && preConfigure(app)
+  _configureRoutes(app, routes, allowUndefinedRoutes)
+  
+  return app
+}
+
+export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRoutes : boolean) {
   function route(f?) {
     if (!f && allowUndefinedRoutes) {
       f = () => {}
@@ -15,12 +40,28 @@ export default function createApp(
     return (req, res) => f({req, res})
   }
 
-  passport.serializeUser(function(user, done) {
-    if (user['id']) {
-      done(null, `local.id:${user['id']}`)
-    } else if(user['identifier']) {
-      done(null, user['identifier'])
+  app.post('/auth/register', route(routes.authLocalRegister))
+  app.post('/auth/login', route(routes.authLocalLogin))
+  app.get('/auth/check', route(routes.authLocalCheck))
+  app.get('/email/verify', route(routes.authEmailVerify))
+  app.get('/auth/google', route(routes.authGoogleEntry))
+  app.get('/auth/google/callback', route(routes.authGoogleCallback))
+  app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
+}
 
+export function _configurePassport(passportStrategies : any[]) {
+  passport.serializeUser(function(user, done) {
+    try {
+      let serialized
+      if (user['id']) {
+        serialized = `local.id:${user['id']}`
+      } else if(user['identifier']) {
+        serialized = user['identifier']
+      }
+      console.log('serialized', serialized)
+      done(null, serialized)
+    } catch(err) {
+      done(err)
     }
   })
   
@@ -37,35 +78,4 @@ export default function createApp(
   passportStrategies.forEach(strategy => {
     passport.use(strategy)
   })
-
-  const app = express()
-  // app.use(cookieParser(cookieSecret))
-  // app.use(cookieEncrypter(cookieSecret))
-  app.use(cookieSession({
-    name: 'session',
-    secret: cookieSecret,
-    maxAge: 1000 * 60 * 60 * 24 * 365,
-  }))
-  app.use(bodyParser.json())
-  app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(passport.initialize())
-  // app.use((req, res, next) => {
-  //   const origin = req.get('Origin')
-  //   if (origin === 'http://memex.link' || origin === 'http://staging.memex.link') {
-  //     res.header("Access-Control-Allow-Origin", origin)
-  //   }
-  //   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-  //   res.header("Access-Control-Allow-Credentials", "true")
-  //   res.header("Access-Control-Allow-Methods", "POST")
-  //   next()
-  // })
-  preConfigure && preConfigure(app)
-  app.post('/auth/register', route(routes.authLocalRegister))
-  app.post('/auth/login', route(routes.authLocalLogin))
-  app.get('/auth/check', route(routes.authLocalCheck))
-  app.get('/email/verify', route(routes.authEmailVerify))
-  app.get('/auth/google', route(routes.authGoogleEntry))
-  app.get('/auth/google/callback', route(routes.authGoogleCallback))
-  app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
-  return app
 }
