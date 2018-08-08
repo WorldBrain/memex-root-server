@@ -8,6 +8,7 @@ export interface Settings {
     awsSesRegion?: string
     mailer?: 'ses' | 'fs' | 'memory'
     storageBackend? : 'aws' | 'memory'
+    domain: string
     baseUrl: string
     googleCredentials?: { id : string, secret : string }
     cookieSecret: string
@@ -44,11 +45,22 @@ export function getDeploymentTier() : DeploymentTier {
 }
 
 export function getDomain({tier}) {
-    return tier === 'production' ? 'https://memex.cloud' : 'https://staging.memex.cloud'
+    if (tier === 'development') {
+        return 'localhost:3002'
+    } else if (tier === 'staging') {
+        return 'staging.memex.cloud'
+    } else {
+        return 'memex.cloud'
+    }
+}
+
+export function getOrigin({tier}) {
+    const domain = getDomain({tier})
+    return tier === 'development' ? `http://${domain}` : `https://${domain}`
 }
 
 export function getBaseUrl({tier}) {
-    return tier === 'development' ? 'http://localhost:3002' : getDomain({tier})
+    return getOrigin({tier})
 }
 
 export function getGoogleCredentials() {
@@ -76,6 +88,7 @@ export function getSettings() : Settings {
     return {
         tier,
         awsSesRegion: getAwsSesRegion(),
+        domain: getDomain({tier}),
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         cookieSecret: getCookieSecret({tier}),

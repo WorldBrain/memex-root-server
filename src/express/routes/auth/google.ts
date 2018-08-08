@@ -23,8 +23,15 @@ export function authGoogleEntry(appControllers : AppControllers) {
 export function authGoogleCallback(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
     const next = () => {
-      req.session[SESSION_KEYS['google-refresh-token']] = req.user.refreshToken
-      req.session[SESSION_KEYS['last-google-login']] = Date.now()
+      res.cookie('auth.google', {
+        [SESSION_KEYS['google-refresh-token']]: req.user.refreshToken,
+        [SESSION_KEYS['last-google-login']]: Date.now()
+      }, {
+        signed: true,
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+        path: '/auth/google'
+      })
+
       delete req.user.refreshToken
       res.json(req.user)
     }
@@ -35,7 +42,12 @@ export function authGoogleCallback(appControllers : AppControllers) {
 
 export function authGoogleRefresh(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
-    const refreshToken = req.signedCookies.auth.refreshToken
+    const refreshToken = req.signedCookies['auth.google'].refreshToken
+    res.cookie('auth.google', req.signedCookies['auth.google'], {
+      signed: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365,
+      path: '/auth/google'
+    })
     res.json(await appControllers.authGoogleRefresh({refreshToken}))
   }
 }

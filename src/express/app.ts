@@ -1,24 +1,25 @@
 const express = require('express')
 const cookieParser = require('cookie-parser')
+const cookieEncrypter = require('cookie-encrypter')
 const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
 import { AppRoutes } from './routes'
 
 export default function createApp(
-  {routes, preConfigure, passportStrategies, cookieSecret, allowUndefinedRoutes = false} :
-  {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], cookieSecret : string, allowUndefinedRoutes? : boolean}
+  {routes, preConfigure, passportStrategies, cookieSecret, domain, allowUndefinedRoutes = false} :
+  {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], cookieSecret : string, domain : string, allowUndefinedRoutes? : boolean}
 ) {
   _configurePassport(passportStrategies)
   
   const app = express()
-  // app.use(cookieParser())
+  app.use(cookieParser(cookieSecret))
+  app.use(cookieEncrypter(cookieSecret))
   app.use(cookieSession({
     name: 'session',
     secret: cookieSecret,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365,
-    },
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+    domain,
   }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))

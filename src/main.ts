@@ -35,7 +35,7 @@ export async function createSetup(settings? : Settings) {
 
 
 export function createExpressApp({ routes, passportStrategies, settings }) {
-  return createApp({ routes, passportStrategies, cookieSecret: settings.cookieSecret })
+  return createApp({ routes, passportStrategies, cookieSecret: settings.cookieSecret, domain: settings.domain })
 }
 
 

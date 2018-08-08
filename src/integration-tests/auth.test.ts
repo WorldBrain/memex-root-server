@@ -17,8 +17,9 @@ describe('Auth service integration tests', () => {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
+            domain: 'localhost:8000',
             baseUrl: 'http://localhost:8000',
-            cookieSecret: 'muahatesting',
+            cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
         })
         const app = createExpressApp(setup)
@@ -67,8 +68,9 @@ describe('Auth service integration tests', () => {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
+            domain: 'localhost:8000',
             baseUrl: 'http://localhost:8000',
-            cookieSecret: 'muahatesting',
+            cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
         })
         const app = createExpressApp(setup)
