@@ -34,17 +34,38 @@ export function connectSequelizeModels({registry, models} : {registry : StorageR
     for (const [collectionName, collectionDefinition] of Object.entries(registry.collections)) {
         for (const relationship of collectionDefinition.relationships) {
             if (isChildOfRelationship(relationship)) {
+                const targetModel = models[relationship.targetCollection]
+                if (!targetModel) {
+                    throw new Error(
+                        `Collection ${collectionName} defines a (single)childOf relationship` +
+                        `involving non-existing collection ${relationship.targetCollection}`
+                    )
+                }
+
                 if (relationship.single) {
-                    models[relationship.targetCollection].hasOne(models[collectionName], {
+                    targetModel.hasOne(models[collectionName], {
                         foreignKey: relationship.targetCollection
                     })
                 } else {
-                    models[relationship.targetCollection].hasMany(models[collectionName], {
+                    targetModel.hasMany(models[collectionName], {
                         foreignKey: relationship.targetCollection
                     })
                 }
             } else if (isConnectsRelationship(relationship)) {
-                models[relationship.connects[0]].belongsToMany(relationship.connects[1], {through: collectionName})
+                const getModel = targetCollectionName => {
+                    const model = models[targetCollectionName]
+                    if (!model) {
+                        throw new Error(
+                            `Collection ${collectionName} defines a connects relationship` +
+                            `involving non-existing collection ${targetCollectionName}`
+                        )
+                    }
+                    return model
+                }
+                const leftModel = getModel(relationship.connects[0])
+                const rightModel = getModel(relationship.connects[1])
+
+                leftModel.belongsToMany(rightModel, {through: collectionName})
             }
         }
     }

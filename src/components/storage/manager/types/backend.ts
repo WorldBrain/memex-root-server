@@ -1,9 +1,9 @@
 import StorageRegistry from "../registry"
 
-export type PutManyOptions = any
-export type PutManyResult = any
-export type PutSingleOptions = any
-export type PutSingleResult = any
+// export type PutSingleOptions = any
+// export type PutSingleResult = {operation: 'create' | 'update', object?: any}
+export type CreateSingleOptions = any
+export type CreateSingleResult = {object?: any}
 export type UpdateManyOptions = any
 export type UpdateManyResult = any
 export type UpdateSingleOptions = any
@@ -34,20 +34,21 @@ export abstract class StorageBackend {
     async cleanup() : Promise<any> {}
     async migrate() : Promise<any> {}
 
-    async putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult> {
-        const definition = this.registry.collections[collection]
-        if (typeof definition.pkIndex === 'string') {
-            if (object[definition.pkIndex]) {
-                return await this.updateObject(collection, {[definition.pkIndex]: object[definition.pkIndex]}, options)
-            } else {
-                return await this.createObject(collection, object, options)
-            }
-        } else {
-            throw new Error('Updating putObject() with compound pks is not supported yet')
-        }
-    }
+    // async putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult> {
+    //     const definition = this.registry.collections[collection]
+    //     if (typeof definition.pkIndex === 'string') {
+    //         if (object[definition.pkIndex]) {
+    //             await this.updateObject(collection, {[definition.pkIndex]: object[definition.pkIndex]}, options)
+    //             return {operation: 'update'}
+    //         } else {
+    //             return {operation: 'create', ...await this.createObject(collection, object, options)}
+    //         }
+    //     } else {
+    //         throw new Error('Updating putObject() with compound pks is not supported yet')
+    //     }
+    // }
 
-    abstract async createObject(collection : string, object, options? : PutSingleOptions)
+    abstract async createObject(collection : string, object, options? : CreateSingleOptions)
     
     abstract findObjects<T>(collection : string, query, options?) : Promise<Array<T>>
     async findObject<T>(collection : string, query, options?) : Promise<T | null> {

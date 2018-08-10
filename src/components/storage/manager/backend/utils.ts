@@ -3,7 +3,7 @@ import { StorageRegistry } from '..'
 import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from '../types'
 
 // Returns a super-putObject which automatically creates new objects for reverse relationships and handles custom field types
-export function augmentPutObject(rawPutObject, {registry} : {registry : StorageRegistry}) {
+export function augmentCreateObject(rawCreateObject, {registry} : {registry : StorageRegistry}) {
     const augmentedPutObject = async (collection : string, object, options?) => {
         const collectionDefinition = registry.collections[collection]
         
@@ -31,7 +31,7 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
             }
         ))
 
-        const {object: insertedObject} = await rawPutObject(collection, lonelyObject, options)
+        const {object: insertedObject} = await rawCreateObject(collection, lonelyObject, options)
 
         for (const reverseRelationshipAlias in collectionDefinition.reverseRelationshipsByAlias) {
             const reverseRelationship = collectionDefinition.reverseRelationshipsByAlias[reverseRelationshipAlias]
@@ -59,7 +59,9 @@ export function augmentPutObject(rawPutObject, {registry} : {registry : StorageR
                     }
                 }
             } else if (isConnectsRelationship(reverseRelationship)) {
-                throw new Error('Sorry, not implemented yet  :(')
+                if (object[reverseRelationshipAlias]) {
+                    throw new Error('Sorry, creating connects relationships through put is not supported yet  :(')
+                }
             }
         }
 

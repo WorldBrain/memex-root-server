@@ -4,10 +4,9 @@ import { createSetup, createExpressApp } from '../main'
 
 function fixSessionCookie(response, agent) {
     // See this bug https://github.com/facebook/jest/issues/3547
-    response.headers['set-cookie'][0]
-        .split(',')
-        .map(item => item.split(';')[0])
-        .forEach(c => agent.jar.setCookie(c))
+    for (const setCookieHeader of response.headers['set-cookie']) {
+        agent.jar.setCookie(setCookieHeader.split(';')[0])
+    }
 }
 
 describe('Auth service integration tests', () => {
@@ -77,7 +76,7 @@ describe('Auth service integration tests', () => {
 
         const email = 'something@foo.com', password = 'ulnevaguess'
         const passwordHash = await setup.components.passwordHasher.hash(password)
-        await setup.components.storage._mananger.collection('user').putObject({
+        await setup.components.storage._mananger.collection('user').createObject({
             identifier: `email:${email}`,
             passwordHash,
             isActive: true,

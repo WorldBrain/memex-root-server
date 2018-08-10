@@ -1,6 +1,5 @@
-// require('source-map-support').install()
-require('require-context/register')
-// import { setupDebugGlobal } from './debug'
+require('source-map-support').install()
+import { setupDebugGlobal } from './debug'
 import createApp from './express/app'
 import { createAppComponents, AppComponents } from './components'
 import { createAppRoutes } from './express/routes'
@@ -11,7 +10,6 @@ import { createHttpServer } from './server'
 import { createPassportStrategies } from './express/passport'
 
 export async function createSetup(settings? : Settings) {
-  console.trace()
   settings = settings || getSettings()
 
   const components = await createAppComponents({

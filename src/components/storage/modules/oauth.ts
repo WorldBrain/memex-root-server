@@ -54,7 +54,7 @@ export class OAuthStorage extends StorageModule {
             }
         }
 
-        return await this.collections.oauthClient.putObject({name})
+        return (await this.collections.oauthClient.createObject({name})).object
     }
 
     async findClient({id: clientId} : {id : string}) {
@@ -67,11 +67,11 @@ export class OAuthStorage extends StorageModule {
         {clientId : client, redirectUri, userId : user, scope} :
         {clientId : string, redirectUri : string, userId : string, scope : string}
     ) : Promise<{code : string}> {
-        return await this.collections.oauthGrantCode.putObject({
+        return (await this.collections.oauthGrantCode.createObject({
             user, client,
             redirectUri,
             scope,
-        })
+        })).object
     }
 
     async findGrantCode({code} : {code : string}) {
@@ -82,7 +82,7 @@ export class OAuthStorage extends StorageModule {
         {userId : user, clientId : client, redirectUri, scope} :
         {userId : string, clientId : string, redirectUri : string, scope : string})
     {
-        return await this.collections.oauthAccessToken.putObject({
+        return await this.collections.oauthAccessToken.createObject({
             user, client,
             redirectUri,
             scope

@@ -1,6 +1,6 @@
 import * as passport from 'passport'
 import * as oauth2orize from 'oauth2orize'
-import * as ensureLoggedIn from 'connect-ensure-login'
+import { ensureLoggedIn } from 'connect-ensure-login'
 import { OAuthStorage } from '../components/storage/modules/oauth'
 
 export function setupOAuthRoutes(

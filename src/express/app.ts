@@ -36,7 +36,7 @@ export default function createApp(config : ExpressAppConfig) {
   app.use(passport.session())
   
   config.preConfigure && config.preConfigure(app)
-  setupOAuthRoutes(app)
+  setupOAuthRoutes({app, oauthStorage: config.oauthStorage})
   _configureRoutes(app, config.routes, config.allowUndefinedRoutes)
   
   return app
@@ -68,7 +68,6 @@ export function _configurePassport(passportStrategies : any[]) {
       } else if(user['identifier']) {
         serialized = user['identifier']
       }
-      console.log('serialized', serialized)
       done(null, serialized)
     } catch(err) {
       done(err)

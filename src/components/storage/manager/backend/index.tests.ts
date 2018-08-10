@@ -1,7 +1,7 @@
 import { StorageBackend } from '../types'
 import StorageRegistry from '../registry'
 import { RandomKeyField } from '../fields'
-import { augmentPutObject } from './utils'
+import { augmentCreateObject } from './utils'
 
 export class FakeRandomKeyField extends RandomKeyField {
     public counter = 1
@@ -14,7 +14,7 @@ export interface FakeStorageBackendConfig {
     idGenerator: (collection, object, options) => string
 }
 export class FakeStorageBackend extends StorageBackend {
-    public putOperations: { object, id }[] = []
+    public createOperations: { object, id }[] = []
 
     constructor(public config: FakeStorageBackendConfig) {
         super()
@@ -24,20 +24,17 @@ export class FakeStorageBackend extends StorageBackend {
         super.configure({ registry })
         registry.fieldTypes.registerType('random-key', FakeRandomKeyField)
 
-        this.putObject = augmentPutObject(this.putObject.bind(this), { registry })
+        this.createObject = augmentCreateObject(this.createObject.bind(this), { registry })
     }
 
     async createObject(collection: string, object, options) {
-    }
-
-    async putObject(collection: string, object, options) {
         const pkIndex = this.registry.collections[collection].pkIndex
         if (typeof pkIndex !== 'string') {
             throw new Error("Oops, we don't support compount pk's yet...")
         }
 
         const id = this.config.idGenerator(collection, object, options)
-        this.putOperations.push({ object, id })
+        this.createOperations.push({ object, id })
         return { object: { ...object, [pkIndex]: id } }
     }
 

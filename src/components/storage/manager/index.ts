@@ -1,10 +1,11 @@
 import StorageRegistry from './registry'
-import { StorageBackend, PutSingleResult } from './types'
+import { StorageBackend, CreateSingleResult } from './types'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
-    putObject(object) : Promise<PutSingleResult>
+    // putObject(object) : Promise<PutSingleResult>
+    createObject(object) : Promise<CreateSingleResult>
     findOneObject<T>(query, options?) : Promise<T | null>
     findObjects<T>(query, options?) : Promise<Array<T>>
     updateOneObject(object, updates, options?)
@@ -33,7 +34,8 @@ export default class StorageManager {
 
     collection(name : string) : StorageCollection {
         return {
-            putObject: (object) => this.backend.putObject(name, object),
+            // putObject: (object) => this.backend.putObject(name, object),
+            createObject: (object) => this.backend.createObject(name, object),
             findOneObject: (query, options?) => this.backend.findObject(name, query, options),
             findObjects: (query, options?) => this.backend.findObjects(name, query, options),
             updateOneObject: (object, options?) => this.backend.updateObject(name, object, options),

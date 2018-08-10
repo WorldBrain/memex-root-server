@@ -53,7 +53,7 @@ export class UserStorage extends StorageModule {
             return { error: 'exists' }
         }
 
-        const {object: user} = await this.collections.user.putObject({
+        const {object: user} = await this.collections.user.createObject({
             identifier: identifier,
             passwordHash,
             isActive: false,

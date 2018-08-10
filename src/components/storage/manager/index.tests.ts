@@ -12,7 +12,6 @@ export function createTestStorageManager(backend : StorageBackend) {
                 isActive: { type: 'boolean' },
             },
             indices: [
-                { field: 'id', pk: true },
                 { field: 'identifier' },
             ]
         },
@@ -86,6 +85,6 @@ export function testStorageBackend(backendCreator : () => Promise<StorageBackend
 
     it('should do basic CRUD ops', async () => {
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
-        const { object: user } = await storageManager.collection('user').putObject(generateTestObject({email, passwordHash, expires}))
+        const { object: user } = await storageManager.collection('user').createObject(generateTestObject({email, passwordHash, expires}))
     })
 }

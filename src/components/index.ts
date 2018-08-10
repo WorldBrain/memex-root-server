@@ -42,21 +42,18 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
         return storage
       }
 
-      const backend =
-        config.tier === 'development'
-        ? new SequelizeStorageBackend({sequelizeConfig: 'sqlite://'})
-        : new SequelizeStorageBackend({sequelizeConfig: {
-          // host: '****.****.us-west-1.rds.amazonaws.com',
-          // port: 5432,
-          logging: console.log,
-          maxConcurrentQueries: 100,
-          dialect: 'postgres',
-          dialectOptions: {
-              ssl: 'Amazon RDS'
-          },
-          pool: { maxConnections: 5, maxIdleTime: 30},
-          language: 'en'
-        }})
+      const backend = new SequelizeStorageBackend({sequelizeConfig: {
+        // host: '****.****.us-west-1.rds.amazonaws.com',
+        // port: 5432,
+        logging: console.log,
+        maxConcurrentQueries: 100,
+        dialect: 'postgres',
+        dialectOptions: {
+            ssl: 'Amazon RDS'
+        },
+        pool: { maxConnections: 5, maxIdleTime: 30},
+        language: 'en'
+      }})
       
       const storageManager = new StorageManager({backend})
       return new Storage({storageManager})

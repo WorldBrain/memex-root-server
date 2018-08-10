@@ -3,7 +3,7 @@ import { createTestStorageManager, generateTestObject } from '../index.tests'
 import { FakeStorageBackend } from './index.tests'
 
 describe('StorageBackend utils', () => {
-    it('should handle putObjects with childOf relationships correctly', async () => {
+    it('should handle createObject()s with childOf relationships correctly', async () => {
         const ids = {}
         const backend = new FakeStorageBackend({
             idGenerator: collection => {
@@ -14,7 +14,7 @@ describe('StorageBackend utils', () => {
         const storageManager = createTestStorageManager(backend)
 
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
-        const { object: user } = await storageManager.collection('user').putObject(generateTestObject({email, passwordHash, expires}))
+        const { object: user } = await storageManager.collection('user').createObject(generateTestObject({email, passwordHash, expires}))
 
         expect(user).to.deep.equal({
             id: 'user-1',
@@ -37,7 +37,7 @@ describe('StorageBackend utils', () => {
                 }
             ]
         })
-        expect(backend.putOperations).to.deep.equal([
+        expect(backend.createOperations).to.deep.equal([
             {
                 id: 'user-1',
                 object: {
