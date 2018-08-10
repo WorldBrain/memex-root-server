@@ -5,29 +5,39 @@ const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 import * as passport from 'passport'
 import { AppRoutes } from './routes'
+import { OAuthStorage } from '../components/storage/modules/oauth'
+import { setupOAuthRoutes } from './oauth'
 
-export default function createApp(
-  {routes, preConfigure, passportStrategies, cookieSecret, domain, allowUndefinedRoutes = false} :
-  {routes : AppRoutes, preConfigure? : Function, passportStrategies : any[], cookieSecret : string, domain : string, allowUndefinedRoutes? : boolean}
-) {
-  _configurePassport(passportStrategies)
+export interface ExpressAppConfig {
+  routes : AppRoutes
+  passportStrategies : any[]
+  cookieSecret : string
+  domain : string
+  oauthStorage : OAuthStorage
+  preConfigure? : Function
+  allowUndefinedRoutes? : boolean
+}
+
+export default function createApp(config : ExpressAppConfig) {
+  _configurePassport(config.passportStrategies)
   
   const app = express()
-  app.use(cookieParser(cookieSecret))
-  app.use(cookieEncrypter(cookieSecret))
+  app.use(cookieParser(config.cookieSecret))
+  app.use(cookieEncrypter(config.cookieSecret))
   app.use(cookieSession({
     name: 'session',
-    secret: cookieSecret,
+    secret: config.cookieSecret,
     maxAge: 1000 * 60 * 60 * 24 * 365,
-    domain,
+    domain: config.domain,
   }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(passport.initialize())
   app.use(passport.session())
-
-  preConfigure && preConfigure(app)
-  _configureRoutes(app, routes, allowUndefinedRoutes)
+  
+  config.preConfigure && config.preConfigure(app)
+  setupOAuthRoutes(app)
+  _configureRoutes(app, config.routes, config.allowUndefinedRoutes)
   
   return app
 }

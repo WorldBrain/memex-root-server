@@ -1,5 +1,4 @@
 import { User } from "../../../types/auth"
-import { StorageCollectionMap } from '../manager'
 import { CollectionDefinitionMap } from "../manager/types"
 import { StorageModule } from "./types"
 import { PasswordHasher } from "../../password-hasher";

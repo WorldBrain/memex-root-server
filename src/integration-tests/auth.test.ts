@@ -1,4 +1,3 @@
-import * as fs from 'fs'
 import * as request from 'supertest'
 import * as expect from 'expect'
 import { createSetup, createExpressApp } from '../main'

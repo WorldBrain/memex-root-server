@@ -18,7 +18,7 @@ export function register(
             from: 'no-reply@memex.cloud',
             to: email,
             subject: 'Activate your Memex Cloud account!',
-            ...verificationEmailGenerator.generateVerificationEmail({
+            ...await verificationEmailGenerator.generateVerificationEmail({
                 link: `${baseUrl}/email/verify?code=${emailVerificationCode}`
             }),
         })

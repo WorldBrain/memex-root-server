@@ -1,8 +1,8 @@
-require('source-map-support').install()
+// require('source-map-support').install()
 require('require-context/register')
 // import { setupDebugGlobal } from './debug'
 import createApp from './express/app'
-import { createAppComponents } from './components'
+import { createAppComponents, AppComponents } from './components'
 import { createAppRoutes } from './express/routes'
 import { createAppControllers } from './controllers'
 import { getSettings, Settings } from './options'
@@ -11,6 +11,7 @@ import { createHttpServer } from './server'
 import { createPassportStrategies } from './express/passport'
 
 export async function createSetup(settings? : Settings) {
+  console.trace()
   settings = settings || getSettings()
 
   const components = await createAppComponents({
@@ -29,13 +30,20 @@ export async function createSetup(settings? : Settings) {
       google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
     },
   })
+  console.log(await components.storage.oauth.createClient({name: 'worldbrain-wp', ifExists: 'retrieve'}))
 
   return {settings, components, controllers, routes, passportStrategies}
 }
 
 
-export function createExpressApp({ routes, passportStrategies, settings }) {
-  return createApp({ routes, passportStrategies, cookieSecret: settings.cookieSecret, domain: settings.domain })
+export function createExpressApp(
+  { routes, passportStrategies, settings, components } :
+  { routes, passportStrategies, settings, components : AppComponents }
+) {
+  return createApp({
+    routes, passportStrategies, cookieSecret: settings.cookieSecret, domain: settings.domain,
+    oauthStorage: components.storage.oauth
+  })
 }
 
 

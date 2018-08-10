@@ -1,6 +1,5 @@
-import * as aws from 'aws-sdk'
 import { DeploymentTier } from '../options'
-import { Mailer, FilesystemMailer, NodeMailer, MemoryMailer } from './mailer';
+import { Mailer, FilesystemMailer, AwsSesMailer, MemoryMailer } from './mailer';
 import { Storage } from './storage'
 import StorageManager from './storage/manager'
 import { PasswordHasher } from './password-hasher'
@@ -70,12 +69,7 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
       const mailer =
         config.tier === 'development'
         ? new FilesystemMailer('/tmp/')
-        : new NodeMailer({
-          SES: new aws.SES({
-              apiVersion: '2010-12-01',
-              region: config.awsSesRegion
-          })
-      })
+        : new AwsSesMailer()
 
       return mailer
     }),

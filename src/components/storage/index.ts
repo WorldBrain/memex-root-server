@@ -1,15 +1,18 @@
 import StorageManager, { StorageCollectionMap } from './manager'
 import { StorageModule } from './modules/types'
 import { UserStorage } from './modules/auth'
+import { OAuthStorage } from './modules/oauth'
 
 export class Storage {
     users : UserStorage
+    oauth : OAuthStorage
     public _mananger : StorageManager
 
     constructor({storageManager} : {storageManager : StorageManager}) {
         this._mananger = storageManager
         
         this._registerModule('users', UserStorage)
+        this._registerModule('oauth', OAuthStorage)
         
         this._mananger.finishInitialization()
     }
@@ -27,7 +30,6 @@ export class Storage {
             collections[collectionName] = this._mananger.collection(collectionName)
         }
         module.configure(collections)
-        // console.log(collections)
 
         this[name] = module
     }
