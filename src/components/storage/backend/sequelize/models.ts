@@ -22,6 +22,10 @@ export function collectionToSequelizeModel({definition, registry} : {definition 
         const modelFieldDef = typeof FIELD_TYPE_MAP[primitiveType] === 'string'
             ? {type: Sequelize[FIELD_TYPE_MAP[primitiveType]]}
             : {...FIELD_TYPE_MAP[primitiveType]}
+
+        if (definition.pkIndex === fieldName) {
+            modelFieldDef.primaryKey = true
+        }
         // modelFieldDef.field = fieldDefinition.fieldName
 
         model[fieldName] = modelFieldDef

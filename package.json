@@ -14,11 +14,10 @@
     "claudia": "claudia",
     "tsc": "tsc",
     "prepare-and-test": "npm run prepare && mocha build/**/*.test.js",
-    "test": "jest --verbose --config=.jest-config.json",
-    "test:watch": "jest --verbose --watch --config=.jest-config.json",
-    "old-test": "mocha --require ts-node/register 'src/**/*.test.ts'",
-    "old-test:watch": "mocha -r source-map-support/register -r ts-node/register 'src/**/*.test.ts' -R min --watch --watch-extensions ts",
-    "old-test:watch-verbose": "mocha -r source-map-support/register -r ts-node/register 'src/**/*.test.ts' --watch --watch-extensions ts"
+    "test:jest": "jest --verbose --config=.jest-config.json",
+    "test:jest:watch": "jest --verbose --watch --config=.jest-config.json",
+    "test:mocha": "mocha --require ts-node/register 'src/**/*.test.ts'",
+    "test:mocha:watch": "mocha -r source-map-support/register -r ts-node/register 'src/**/*.test.ts' --watch --watch-extensions ts"
   },
   "betterScripts": {
     "devmon": {
@@ -69,7 +68,9 @@
     "oauth2orize": "^1.11.0",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
+    "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
+    "passport-oauth2-client-password": "^0.1.2",
     "pluralize": "^7.0.0",
     "promise-async": "^0.2.0",
     "promise-retry": "^1.1.1",

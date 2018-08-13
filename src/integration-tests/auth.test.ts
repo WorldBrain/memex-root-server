@@ -1,13 +1,7 @@
 import * as request from 'supertest'
 import * as expect from 'expect'
 import { createSetup, createExpressApp } from '../main'
-
-function fixSessionCookie(response, agent) {
-    // See this bug https://github.com/facebook/jest/issues/3547
-    for (const setCookieHeader of response.headers['set-cookie']) {
-        agent.jar.setCookie(setCookieHeader.split(';')[0])
-    }
-}
+import { fixSessionCookie } from './utils'
 
 describe('Auth service integration tests', () => {
     it('should handle the signup flow correctly', async () => {
@@ -74,20 +68,25 @@ describe('Auth service integration tests', () => {
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
-        const email = 'something@foo.com', password = 'ulnevaguess'
-        const passwordHash = await setup.components.passwordHasher.hash(password)
-        await setup.components.storage._mananger.collection('user').createObject({
-            identifier: `email:${email}`,
-            passwordHash,
-            isActive: true,
-        })
-        
-        const loginResponse = await agent.post('/auth/login').send({email, password})
-        fixSessionCookie(loginResponse, agent)
-
-        const checkResponse = await agent.get('/auth/check')
-        expect(checkResponse.body).toEqual({
-            authenticated: true
-        })
+        testLoginFlow({setup, agent})
     })
 })
+
+export async function testLoginFlow({setup, agent}) {
+    const email = 'something@foo.com', password = 'ulnevaguess'
+    const passwordHash = await setup.components.passwordHasher.hash(password)
+    await setup.components.storage._mananger.collection('user').createObject({
+        identifier: `email:${email}`,
+        passwordHash,
+        isActive: true,
+    })
+    
+    const loginResponse = await agent.post('/auth/login').send({email, password})
+    fixSessionCookie(loginResponse, agent)
+
+    const checkResponse = await agent.get('/auth/check')
+    expect(checkResponse.body).toEqual({
+        authenticated: true
+    })
+    fixSessionCookie(checkResponse, agent)
+}

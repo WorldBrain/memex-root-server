@@ -19,7 +19,7 @@ export class OAuthStorage extends StorageModule {
             version: new Date(2018, 7, 31),
             fields: {
                 code: { type: 'random-key' },
-                redirectUri: { type: 'string' },
+                redirectURI: { type: 'string' },
                 scope: { type: 'string' }
             },
             relationships: [
@@ -33,7 +33,7 @@ export class OAuthStorage extends StorageModule {
             version: new Date(2018, 7, 31),
             fields: {
                 token: { type: 'random-key' },
-                redirectUri: { type: 'string' }
+                redirectURI: { type: 'string' }
             },
             relationships: [
                 {connects: ['oauthClient', 'user']}
@@ -44,7 +44,10 @@ export class OAuthStorage extends StorageModule {
         },
     }
 
-    async createClient({name, ifExists} : {name : string, ifExists : 'retrieve' | 'error'}) {
+    async createClient(
+        {name, clientId, clientSecret, ifExists} :
+        {name : string, clientId? : string, clientSecret? : string, ifExists : 'retrieve' | 'error'}
+    ) {
         const existingClient = await this.collections.oauthClient.findOneObject({name})
         if (existingClient) {
             if (ifExists === 'retrieve') {
@@ -54,22 +57,22 @@ export class OAuthStorage extends StorageModule {
             }
         }
 
-        return (await this.collections.oauthClient.createObject({name})).object
+        return (await this.collections.oauthClient.createObject({name, clientId, clientSecret})).object
     }
 
     async findClient({id: clientId} : {id : string}) {
         const client = <any>await this.collections.oauthClient.findOneObject({clientId})
-        client.privileged = client.domain === 'worldbrain.io'
+        client.privileged = client.name === 'worldbrain.io'
         return client
     }
 
     async storeGrantCode(
-        {clientId : client, redirectUri, userId : user, scope} :
-        {clientId : string, redirectUri : string, userId : string, scope : string}
+        {clientId : client, redirectURI, userId : user, scope} :
+        {clientId : string, redirectURI : string, userId : string, scope : string}
     ) : Promise<{code : string}> {
         return (await this.collections.oauthGrantCode.createObject({
             user, client,
-            redirectUri,
+            redirectURI,
             scope,
         })).object
     }
@@ -79,13 +82,19 @@ export class OAuthStorage extends StorageModule {
     }
 
     async storeAccessToken(
-        {userId : user, clientId : client, redirectUri, scope} :
-        {userId : string, clientId : string, redirectUri : string, scope : string})
+        {userId : user, clientId : oauthClient, redirectURI, scope} :
+        {userId : string, clientId : string, redirectURI : string, scope : string})
     {
-        return await this.collections.oauthAccessToken.createObject({
-            user, client,
-            redirectUri,
+        console.log(oauthClient)
+        return (await this.collections.oauthAccessToken.createObject({
+            user, oauthClient,
+            redirectURI,
             scope
-        })
+        })).object
+    }
+
+    async findAccessToken(tokenString : string) {
+        const token = <any>await this.collections.oauthAccessToken.findOneObject({token: tokenString})
+        return token
     }
 }

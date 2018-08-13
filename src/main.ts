@@ -28,7 +28,15 @@ export async function createSetup(settings? : Settings) {
       google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
     },
   })
-  console.log(await components.storage.oauth.createClient({name: 'worldbrain-wp', ifExists: 'retrieve'}))
+
+  if (settings.worldbrainOAuthCredentials) {
+    await components.storage.oauth.createClient({
+      name: 'worldbrain.io',
+      clientId: settings.worldbrainOAuthCredentials.id,
+      clientSecret: settings.worldbrainOAuthCredentials.secret,
+      ifExists: 'retrieve'
+    })
+  }
 
   return {settings, components, controllers, routes, passportStrategies}
 }

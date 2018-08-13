@@ -11,6 +11,7 @@ export interface Settings {
     domain: string
     baseUrl: string
     googleCredentials?: { id : string, secret : string }
+    worldbrainOAuthCredentials? : { id : string, secret : string }
     cookieSecret: string
     devOptions?: DevShortcutsConfig
 }
@@ -95,6 +96,13 @@ export function getStorageBackend({tier} : {tier : DeploymentTier}) {
     return 'aws'
 }
 
+export function getWorldbrainOAuthCredentials() {
+    return {
+        id: process.env.WORLDBRAIN_WP_CLIENT_ID,
+        secret: process.env.WORLDBRAIN_WP_CLIENT_SECRET,
+    }
+}
+
 export function getSettings() : Settings {
     const tier = getDeploymentTier()
     return {
@@ -104,6 +112,7 @@ export function getSettings() : Settings {
         domain: getDomain({tier}),
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
+        worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
         cookieSecret: getCookieSecret({tier}),
         devOptions: parseCommandLineOptions().dev,
     }
