@@ -9,7 +9,7 @@ build:
   stage: build
   image: node:8-alpine
   script:
-  - npm install typescript@^3
+  - npm install typescript@^3 --no-save
   - npm run prepare
 
 deploy:
