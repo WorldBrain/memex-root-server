@@ -7,9 +7,9 @@ stages:
 
 build:
   stage: build
-  image: node:8-alpine
+  image: node:8
   script:
-  - npm install typescript@^3 --no-save
+  - npm install
   - npm run prepare
 
 deploy:
