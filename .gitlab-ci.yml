@@ -3,7 +3,7 @@
 
 deploy to production:
   environment: production
-  image: ruby-node:2-8-alpine
+  image: starefossen/ruby-node:2-8-alpine
   script:
   - gem install dpl
   - npm run prepare
@@ -23,7 +23,7 @@ deploy to production:
 
 deploy to staging:
   environment: staging
-  image: ruby-node:2-8-alpine
+  image: starefossen/ruby-node:2-8-alpine
   script:
   - gem install dpl
   - npm run prepare
