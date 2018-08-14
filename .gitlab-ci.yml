@@ -13,6 +13,7 @@ build:
   - npm run prepare
 
 deploy:
+  stage: deploy
   environment:
     name: "${CI_COMMIT_REF_NAME}"
   script:
