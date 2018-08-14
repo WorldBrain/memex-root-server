@@ -2,7 +2,7 @@ import * as expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend } from './types'
 
-export function createTestStorageManager(backend : StorageBackend) {
+export function createTestStorageManager(backend: StorageBackend) {
     const storageManager = new StorageManager({ backend })
     storageManager.registry.registerCollections({
         user: {
@@ -68,9 +68,8 @@ export function createTestStorageManager(backend : StorageBackend) {
 }
 
 export function generateTestObject(
-    {email = 'blub@bla.com', passwordHash = 'hashed!', expires} :
-    {email : string, passwordHash : string, expires : number})
-{
+    { email = 'blub@bla.com', passwordHash = 'hashed!', expires }:
+        { email: string, passwordHash: string, expires: number }) {
     return {
         identifier: `email:${email}`,
         passwordHash,
@@ -88,9 +87,9 @@ export function generateTestObject(
     }
 }
 
-export function testStorageBackend(backendCreator : () => Promise<StorageBackend>) {
-    let backend : StorageBackend
-    let storageManager : StorageManager
+export function testStorageBackend(backendCreator: () => Promise<StorageBackend>) {
+    let backend: StorageBackend
+    let storageManager: StorageManager
 
     beforeEach(async () => {
         backend = await backendCreator()
@@ -104,10 +103,21 @@ export function testStorageBackend(backendCreator : () => Promise<StorageBackend
 
     it('should do basic CRUD ops', async () => {
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
-        const { object: user } = await storageManager.collection('user').createObject(generateTestObject({email, passwordHash, expires}))
+        const { object: user } = await storageManager.collection('user').createObject(generateTestObject({ email, passwordHash, expires }))
+        expect(user).toMatchObject({
+            identifier: 'email:blub@bla.com',
+            passwordHash: 'hashed!',
+            isActive: false,
+            emails: [{
+                email: 'blub@bla.com',
+                isVerified: false,
+                isPrimary: true,
+                verificationCode: expect.objectContaining({})
+            }]
+        })
     })
 
-    it.only('should handle connects relationships correctly', async () => {
+    it('should handle connects relationships correctly', async () => {
         const email = 'something@foo.com', passwordHash = 'notahash'
         const createdUser = (await storageManager.collection('user').createObject({
             identifier: `email:${email}`,

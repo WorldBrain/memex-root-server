@@ -7,7 +7,7 @@ import { testLoginFlow } from "./auth.test"
 import { fixSessionCookie } from './utils'
 
 describe('OAuth integration tests', () => {
-    it('should work only for WorldBrain', async () => {
+    it.only('should work only for WorldBrain', async () => {
         const worldbrainOAuthCredentials = { id: 'worldbrain-oauth-id', secret: 'worldbrain-oauth-secret' };
         const setup = await createSetup({
             tier: 'production',
@@ -51,13 +51,13 @@ describe('OAuth integration tests', () => {
 
         app.get('/api/userinfo',
             passport.authenticate('bearer', { session: false }),
-            function (req, res) {
-                console.log(req.user)
-                res.json({foo: 5})
+            async function (req, res) {
+                const user = await setup.components.storage.users.findById(req.user.userId)
+                res.json({identifier: user['identifier']})
             }
         )
 
         const apiResponse = await request(app).get('/api/userinfo').auth(accessToken, accessToken, {type: 'bearer'})
-        // console.log(apiResponse)
+        expect(apiResponse.body).toEqual({identifier: 'email:something@foo.com'})
     })
 })

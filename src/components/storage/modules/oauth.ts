@@ -33,7 +33,7 @@ export class OAuthStorage extends StorageModule {
             version: new Date(2018, 7, 31),
             fields: {
                 token: { type: 'random-key' },
-                redirectURI: { type: 'string' }
+                redirectURI: { type: 'string' },
             },
             relationships: [
                 {connects: ['oauthClient', 'user']}
@@ -67,11 +67,11 @@ export class OAuthStorage extends StorageModule {
     }
 
     async storeGrantCode(
-        {clientId : client, redirectURI, userId : user, scope} :
+        {clientId : oauthClient, redirectURI, userId : user, scope} :
         {clientId : string, redirectURI : string, userId : string, scope : string}
     ) : Promise<{code : string}> {
         return (await this.collections.oauthGrantCode.createObject({
-            user, client,
+            user, oauthClient,
             redirectURI,
             scope,
         })).object

@@ -30,9 +30,8 @@ export function setupOAuthRoutes(
             if (client.id !== grantCode.clientId) { return done(null, false) }
             if (redirectURI !== grantCode.redirectURI) { return done(null, false) }
 
-            console.log('!!!', grantCode)
             const accessToken = await oauthStorage.storeAccessToken({
-                userId: grantCode.userId, clientId: grantCode.client, redirectURI, scope: grantCode.scope
+                userId: grantCode.user, clientId: grantCode.oauthClient, redirectURI, scope: grantCode.scope
             })
             done(null, accessToken.token)
         } catch (err) {
@@ -109,16 +108,16 @@ export function setupOAuthRoutes(
     passport.use(new BearerStrategy(async (accessToken, done) => {
         try {
             const token = await oauthStorage.findAccessToken(accessToken)
-            console.log(token)
             if (!token) {
                 return done(null, false)
             }
-
-            if (!token.client) {
+            
+            if (!token.oauthClient) {
                 return done(null, false)
             }
-
-            const client = await oauth2orize.findClient({id: token.oauthClient})
+            
+            const client = await oauthStorage.findClient({id: token.oauthClient})
+            client.userId = token.user
             done(null, client, { scope: '*' })
         } catch (err) {
             done(err)
