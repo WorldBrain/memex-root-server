@@ -1,42 +1,59 @@
 # variables:
 #   S3_BUCKET_NAME: "yourbucket"
 
-deploy to production:
-  environment: production
-  image: starefossen/ruby-node:2-8-alpine
-  script:
-  - gem install dpl
-  - npm run prepare
-  - >
-    dpl
-    --provider=lambda
-    --runtime=nodejs8.10
-    --access_key_id="${AWS_ACCESS_KEY}"
-    --secret_access_key="${AWS_SECRET_KEY}"
-    --region=eu-central-1
-    --function_name="memex-root-service-production"
-    --role="${AWS_LAMBDA_ROLE}"
-    --module_name="build/main-lambda.js"
-    --handler_name="handler"
-  only:
-  - deploy/production
+stages:
+  - build
+  - deploy
 
-deploy to staging:
-  environment: staging
+build:
+  stage: build
   image: starefossen/ruby-node:2-8-alpine
   script:
-  - gem install dpl
+  - npm install
   - npm run prepare
-  - >
-    dpl
-    --provider=lambda
-    --runtime=nodejs8.10
-    --access_key_id="${AWS_ACCESS_KEY}"
-    --secret_access_key="${AWS_SECRET_KEY}"
-    --region=eu-central-1
-    --function_name="memex-root-service-staging"
-    --role="${AWS_LAMBDA_ROLE}"
-    --module_name="build/main-lambda.js"
-    --handler_name="handler"
-  only:
-  - deploy/staging
+
+deploy:
+  environment:
+    name: ${BRANCH#"deployment/"}
+  script:
+    - echo "${CI_ENVIRONMENT_NAME}"
+
+# deploy to production:
+#   environment: production
+#   image: starefossen/ruby-node:2-8-alpine
+#   script:
+#   - gem install dpl
+#   - npm run prepare
+#   - >
+#     dpl
+#     --provider=lambda
+#     --runtime=nodejs8.10
+#     --access_key_id="${AWS_ACCESS_KEY}"
+#     --secret_access_key="${AWS_SECRET_KEY}"
+#     --region=eu-central-1
+#     --function_name="memex-root-service-production"
+#     --role="${AWS_LAMBDA_ROLE}"
+#     --module_name="build/main-lambda.js"
+#     --handler_name="handler"
+#   only:
+#   - deploy/production
+
+# deploy to staging:
+#   environment: staging
+#   image: starefossen/ruby-node:2-8-alpine
+#   script:
+#   - gem install dpl
+#   - npm run prepare
+#   - >
+#     dpl
+#     --provider=lambda
+#     --runtime=nodejs8.10
+#     --access_key_id="${AWS_ACCESS_KEY}"
+#     --secret_access_key="${AWS_SECRET_KEY}"
+#     --region=eu-central-1
+#     --function_name="memex-root-service-staging"
+#     --role="${AWS_LAMBDA_ROLE}"
+#     --module_name="build/main-lambda.js"
+#     --handler_name="handler"
+#   only:
+#   - deploy/staging
