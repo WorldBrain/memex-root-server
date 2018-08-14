@@ -48,11 +48,11 @@ export function connectSequelizeModels({registry, models} : {registry : StorageR
 
                 if (relationship.single) {
                     targetModel.hasOne(models[collectionName], {
-                        foreignKey: relationship.targetCollection
+                        foreignKey: relationship.fieldName
                     })
                 } else {
                     targetModel.hasMany(models[collectionName], {
-                        foreignKey: relationship.targetCollection
+                        foreignKey: relationship.fieldName
                     })
                 }
             } else if (isConnectsRelationship(relationship)) {
@@ -69,7 +69,8 @@ export function connectSequelizeModels({registry, models} : {registry : StorageR
                 const leftModel = getModel(relationship.connects[0])
                 const rightModel = getModel(relationship.connects[1])
 
-                leftModel.belongsToMany(rightModel, {through: collectionName})
+                leftModel.belongsToMany(rightModel, {through: collectionName, foreignKey: relationship.fieldNames[0]})
+                rightModel.belongsToMany(leftModel, {through: collectionName, foreignKey: relationship.fieldNames[1]})
             }
         }
     }

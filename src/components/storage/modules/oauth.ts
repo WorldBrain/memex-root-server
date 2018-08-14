@@ -85,7 +85,6 @@ export class OAuthStorage extends StorageModule {
         {userId : user, clientId : oauthClient, redirectURI, scope} :
         {userId : string, clientId : string, redirectURI : string, scope : string})
     {
-        console.log(oauthClient)
         return (await this.collections.oauthAccessToken.createObject({
             user, oauthClient,
             redirectURI,

@@ -5,6 +5,7 @@ import * as backend from '../../manager/types/backend'
 import { augmentCreateObject } from '../../manager/backend/utils'
 import { collectionToSequelizeModel, connectSequelizeModels } from './models'
 import { operatorsAliases } from './operators'
+import { cleanRelationshipFieldsForWrite, cleanRelationshipFieldsForRead } from './utils';
 
 export class SequelizeStorageBackend extends backend.StorageBackend {
     private sequelizeConfig : Sequelize.Options | string
@@ -64,14 +65,18 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
 
     async createObject(collection : string, object, options? : backend.CreateSingleOptions & {_transaction?}) : Promise<backend.CreateSingleResult> {
         const model = this.sequelizeModels[collection]
-        const instance = await model.create(object, {transaction: options._transaction})
+        const cleanedObject = cleanRelationshipFieldsForWrite(object, this.registry.collections[collection])
+        const instance = await model.create(cleanedObject, {transaction: options._transaction})
         return {object: instance.dataValues}
     }
     
     async findObjects<T>(collection : string, query, options = {}) : Promise<Array<T>> {
         const model = this.sequelizeModels[collection]
         const instances = await model.findAll({where: query})
-        return instances.map(instance => instance.dataValues)
+        return instances.map(instance => cleanRelationshipFieldsForRead(
+            instance.dataValues,
+            this.registry.collections[collection]
+        ))
     }
     
     async updateObjects(collection : string, query, updates, options : backend.UpdateManyOptions & {transaction?} = {}) : Promise<backend.UpdateManyResult> {
