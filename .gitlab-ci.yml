@@ -9,8 +9,11 @@ build:
   stage: build
   image: node:8
   script:
-  - npm install
-  - npm run prepare
+    - npm install
+    - npm run prepare
+  artifacts:
+    paths:
+      - build/
 
 deploy:
   stage: deploy
@@ -20,7 +23,6 @@ deploy:
   script:
     - echo "Deploying to ${CI_ENVIRONMENT_NAME}"
     - gem install dpl
-    - npm run prepare
     - >
       dpl
       --provider=lambda
