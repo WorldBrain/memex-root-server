@@ -14,9 +14,12 @@ build:
 
 deploy:
   environment:
-    name: ${BRANCH#"deployment/"}
+    name: "${CI_COMMIT_REF_NAME}"
   script:
     - echo "${CI_ENVIRONMENT_NAME}"
+  only:
+    - staging
+    - production
 
 # deploy to production:
 #   environment: production
