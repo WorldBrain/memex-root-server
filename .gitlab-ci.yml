@@ -3,6 +3,7 @@
 
 stages:
   - build
+  - test
   - deploy
 
 build:
@@ -14,6 +15,16 @@ build:
   artifacts:
     paths:
       - build/
+      - node_modules/
+
+test:
+  stage: test
+  image: node:8
+  script:
+    - npm run test:mocha
+  only:
+    - staging
+    - production
 
 deploy:
   stage: deploy
@@ -30,7 +41,7 @@ deploy:
       --access_key_id="${AWS_ACCESS_KEY}"
       --secret_access_key="${AWS_SECRET_KEY}"
       --region=eu-central-1
-      --function_name="memex-root-service-${CI_ENVIRONMENT_NAME}"
+      --function_name="${LAMBDA_FUNCTION_PREFIX}-${CI_ENVIRONMENT_NAME}"
       --role="${AWS_LAMBDA_ROLE}"
       --module_name="build/main-lambda.js"
       --handler_name="handler"
