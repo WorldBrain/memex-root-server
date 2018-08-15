@@ -41,7 +41,7 @@ deploy:
       --access_key_id="${AWS_ACCESS_KEY}"
       --secret_access_key="${AWS_SECRET_KEY}"
       --region=eu-central-1
-      --function_name="${LAMBDA_FUNCTION_PREFIX}:${CI_ENVIRONMENT_NAME}"
+      --function_name="${LAMBDA_FUNCTION_PREFIX}-${CI_ENVIRONMENT_NAME}"
       --role="${AWS_LAMBDA_ROLE}"
       --module_name="build/main-lambda.js"
       --handler_name="handler"
