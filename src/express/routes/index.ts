@@ -1,5 +1,6 @@
 import { AppComponents } from '../../components'
 import { AppControllers } from '../../controllers'
+import * as adminRoutes from './admin'
 import * as authLocalRoutes from './auth/local'
 import * as authEmailRoutes from './auth/email'
 import * as authGoogleRoutes from './auth/google'
@@ -7,6 +8,7 @@ import * as authGoogleRoutes from './auth/google'
 export type RouteHandler = ({req, res}) => void
 
 export interface AppRoutes {
+  adminStorageMigrate : RouteHandler
   authLocalRegister : RouteHandler
   authLocalLogin : RouteHandler
   authLocalCheck : RouteHandler
@@ -18,6 +20,7 @@ export interface AppRoutes {
 
 export function createAppRoutes(appControllers : AppControllers) : AppRoutes {
   return {
+    adminStorageMigrate: adminRoutes.adminStorageMigrate(appControllers),
     authLocalRegister: authLocalRoutes.authLocalRegister(appControllers),
     authLocalLogin: authLocalRoutes.authLocalLogin(appControllers),
     authLocalCheck: authLocalRoutes.authLocalCheck(appControllers),

@@ -10,11 +10,14 @@ export interface Settings {
     storageBackend? : 'aws' | 'memory'
     domain: string
     baseUrl: string
+    migrationAccessCode? : string
     googleCredentials?: { id : string, secret : string }
     worldbrainOAuthCredentials? : { id : string, secret : string }
     cookieSecret: string
     devOptions?: DevShortcutsConfig
 }
+
+const missingEnvVar = (name : string) => new Error(`Tried to run this without providing a ${name}. Exploding for your safety  <3`)
 
 export function parseCommandLineOptions() {
     const options = yargs
@@ -78,7 +81,7 @@ export function getCookieSecret({tier} : {tier : DeploymentTier}) {
         if (tier === 'development') {
             secret = 'notsosecret|ReDrUm!!|notsosecret'
         } else {
-            throw new Error('Tried to run this with providing a COOKIE_SECRET. Exploding for your safety  <3')
+            throw missingEnvVar('COOKIE_SECRET')
         }
     }
     return secret
@@ -103,6 +106,14 @@ export function getWorldbrainOAuthCredentials() {
     }
 }
 
+export function getMigrationAccessCode({tier}) {
+    const code = process.env.MIGRATION_ACCESS_CODE
+    if (!code && tier !== 'development') {
+        throw missingEnvVar('MIGRATION_ACCESS_CODE')
+    }
+    return code
+}
+
 export function getSettings() : Settings {
     const tier = getDeploymentTier()
     return {
@@ -113,6 +124,7 @@ export function getSettings() : Settings {
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
+        migrationAccessCode: getMigrationAccessCode({tier}),
         cookieSecret: getCookieSecret({tier}),
         devOptions: parseCommandLineOptions().dev,
     }
