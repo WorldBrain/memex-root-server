@@ -10,11 +10,17 @@ export function adminStorageMigrate(appControllers : AppControllers) {
         return forbidden()
     }
 
-    const result = await appControllers.adminStorageMigrate({suppliedAccessCode})
-    if (!result) {
-        return forbidden()
-    }
+    try {
+      const result = await appControllers.adminStorageMigrate({suppliedAccessCode})
+      if (!result) {
+          return forbidden()
+      }
 
-    res.send('OK')
+      res.send('OK')
+    } catch (err) {
+      console.error(err)
+      console.error(err.stack)
+      res.status(500).send('Failed')
+    }
   }
 }

@@ -5,6 +5,7 @@ stages:
   - build
   - test
   - deploy
+  - migrate
 
 build:
   stage: build
@@ -31,6 +32,8 @@ deploy:
   image: ruby:2.5
   environment:
     name: "${CI_COMMIT_REF_NAME}"
+  variables:
+    BASE_URL=${}
   script:
     - echo "Deploying to ${CI_ENVIRONMENT_NAME}"
     - gem install dpl
@@ -53,6 +56,19 @@ deploy:
       --role="${AWS_LAMBDA_ROLE}"
       --module_name="build/main-lambda.js"
       --handler_name="handler"
+  only:
+    - staging
+    - production
+
+migrate:
+  stage: migrate
+  image: byrnedo/alpine-curl
+  environment:
+    name: "${CI_COMMIT_REF_NAME}"
+  # variables:
+  #   DOMAIN: sh ./get-tier-domain.sh memex.cloud ${CI_ENVIRONMENT_NAME}
+  script:
+    - curl "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
   only:
     - staging
     - production
