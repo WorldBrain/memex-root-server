@@ -3,6 +3,7 @@ import * as yargs from 'yargs'
 import { DevShortcutCommand, DevShortcutsConfig } from './dev-shortcuts/types'
 
 export type DeploymentTier = 'development' | 'staging' | 'production'
+export type DatabaseCredentials = { host: string, port : number, username : string, password : string }
 export interface Settings {
     tier : DeploymentTier,
     awsSesRegion?: string
@@ -10,10 +11,21 @@ export interface Settings {
     storageBackend? : 'aws' | 'memory'
     domain: string
     baseUrl: string
+    adminAccessCode? : string
+    databaseCredentials? : DatabaseCredentials
     googleCredentials?: { id : string, secret : string }
     worldbrainOAuthCredentials? : { id : string, secret : string }
     cookieSecret: string
     devOptions?: DevShortcutsConfig
+}
+
+const missingEnvVar = (name : string) => new Error(`Tried to run this without providing a ${name}. Exploding for your safety  <3`)
+const requiredEnvVar = (name : string, tier : string) => {
+    const value = process.env[name]
+    if (!value && tier !== 'development') {
+        throw missingEnvVar(name)
+    }
+    return value
 }
 
 export function parseCommandLineOptions() {
@@ -78,7 +90,7 @@ export function getCookieSecret({tier} : {tier : DeploymentTier}) {
         if (tier === 'development') {
             secret = 'notsosecret|ReDrUm!!|notsosecret'
         } else {
-            throw new Error('Tried to run this with providing a COOKIE_SECRET. Exploding for your safety  <3')
+            throw missingEnvVar('COOKIE_SECRET')
         }
     }
     return secret
@@ -103,8 +115,24 @@ export function getWorldbrainOAuthCredentials() {
     }
 }
 
-export function getSettings() : Settings {
-    const tier = getDeploymentTier()
+export function getAdminAccessCode({tier}) {
+    return requiredEnvVar('ADMIN_ACCESS_CODE', tier)
+}
+
+export function getRdsCredentials({tier}) {
+    const username = requiredEnvVar('RDS_USERNAME', tier)
+    const password = requiredEnvVar('RDS_PASSWORD', tier)
+    return {host: 'memex-cloud.cq6sab3rf0cl.eu-central-1.rds.amazonaws.com', port: 5432, username, password}
+}
+
+export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?, suppliedAdminAccessCode? : string} = {}) : Settings {
+    let tier = getDeploymentTier()
+
+    const adminAccessCode = getAdminAccessCode({ tier })
+    if (overwrites.tier && suppliedAdminAccessCode === adminAccessCode) {
+        tier = overwrites.tier
+    }
+
     return {
         tier,
         awsSesRegion: getAwsSesRegion(),
@@ -113,6 +141,8 @@ export function getSettings() : Settings {
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
+        adminAccessCode: adminAccessCode,
+        databaseCredentials: getRdsCredentials({tier}),
         cookieSecret: getCookieSecret({tier}),
         devOptions: parseCommandLineOptions().dev,
     }

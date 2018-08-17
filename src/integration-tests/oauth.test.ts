@@ -9,7 +9,7 @@ import { fixSessionCookie } from './utils'
 describe('OAuth integration tests', () => {
     it('should work only for WorldBrain', async () => {
         const worldbrainOAuthCredentials = { id: 'worldbrain-oauth-id', secret: 'worldbrain-oauth-secret' };
-        const setup = await createSetup({
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -18,7 +18,7 @@ describe('OAuth integration tests', () => {
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'},
             worldbrainOAuthCredentials
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 

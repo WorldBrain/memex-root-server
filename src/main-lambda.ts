@@ -1,5 +1,5 @@
 import * as awsServerlessExpress from 'aws-serverless-express'
-import setupApp from './main-claudia'
+import * as main from './main'
 
 const BINARY_MIME_TYPES = [
 	'application/octet-stream',
@@ -12,7 +12,14 @@ const BINARY_MIME_TYPES = [
 ]
 
 exports.handler = async (event, context) => {
-	const app = await setupApp()
+	let suppliedAdminAccessCode : string, tierOverwrite : string
+	if (event.queryStringParameters !== null && event.queryStringParameters !== undefined) {
+		tierOverwrite = event.queryStringParameters['tier']
+		suppliedAdminAccessCode = event.queryStringParameters['access-code']
+	}
+
+	const setup = await main.createSetup({overwrites: {tierOverwrite}, suppliedAdminAccessCode})
+    const app = main.createExpressApp(setup)
 	const server = awsServerlessExpress.createServer(app, null, BINARY_MIME_TYPES)
 	return await awsServerlessExpress.proxy(server, event, context)
 }

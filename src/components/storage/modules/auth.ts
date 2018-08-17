@@ -118,6 +118,9 @@ export class UserStorage extends StorageModule {
 
     async _findBy(query, {withPasswordHash = false} = {}) : Promise<User | null> {
         const user = await this.collections.user.findOneObject<User>(query);
+        if (!user) {
+            return null
+        }
         if (!withPasswordHash) {
             delete user['passwordHash'] // Just to prevent accidental data leaking
         }

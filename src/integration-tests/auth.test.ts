@@ -5,7 +5,7 @@ import { fixSessionCookie } from './utils'
 
 describe('Auth service integration tests', () => {
     it('should handle the signup flow correctly', async () => {
-        const setup = await createSetup({
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -13,7 +13,7 @@ describe('Auth service integration tests', () => {
             baseUrl: 'http://localhost:8000',
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
         
@@ -44,19 +44,14 @@ describe('Auth service integration tests', () => {
             isActive: true
         }))
 
-        // console.log(await agent.post('/auth/login').send({
-        //     email: 'test@test.com',
-        //     password: 'supersecure'
-        // }))
-
         const checkResponse = await agent.get('/auth/check')
         expect(checkResponse.body).toEqual({
             authenticated: true
         })
     })
 
-    it('should handle the login flow correctly', async () => {
-        const setup = await createSetup({
+    it.skip('should handle the login flow correctly', async () => {
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -64,11 +59,42 @@ describe('Auth service integration tests', () => {
             baseUrl: 'http://localhost:8000',
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
-        testLoginFlow({setup, agent})
+        const email = 'something@foo.com', password = 'ulnevaguess'
+        const passwordHash = await setup.components.passwordHasher.hash(password)
+        await setup.components.storage._mananger.collection('user').createObject({
+            identifier: `email:${email}`,
+            passwordHash,
+            isActive: true,
+        })
+        
+        const loginResponse = await agent.post('/auth/login').send({email, password})
+        fixSessionCookie(loginResponse, agent)
+
+        const checkResponse = await agent.get('/auth/check')
+        expect(checkResponse.body).toEqual({
+            authenticated: true
+        })
+        fixSessionCookie(checkResponse, agent)
+    })
+
+    it('should handle the passwordless login flow correctly', async () => {
+        const setup = await createSetup({settings: {
+            tier: 'production',
+            mailer: 'memory',
+            storageBackend: 'memory',
+            domain: 'localhost:8000',
+            baseUrl: 'http://localhost:8000',
+            cookieSecret: 'muahatestingmuahatestingmuahates',
+            googleCredentials: {id: 'gid', secret: 'gsec'}
+        }})
+        const app = createExpressApp(setup)
+        const agent = request.agent(app)
+
+        await testLoginFlow({setup, agent})
     })
 })
 
@@ -80,8 +106,33 @@ export async function testLoginFlow({setup, agent}) {
         passwordHash,
         isActive: true,
     })
+
+    const wrongLoginStartResponse = await agent.post('/auth/passwordless/login/start').send({
+        email: 'idont@exist.com',
+        successUrl: '/success/',
+        failureUrl: '/fail/'
+    })
+    expect(wrongLoginStartResponse.redirect).toBe(true)
+    expect(wrongLoginStartResponse.headers.location).toEqual('/fail/')
     
-    const loginResponse = await agent.post('/auth/login').send({email, password})
+    const correctLoginStartResponse = await agent.post('/auth/passwordless/login/start').send({
+        email,
+        successUrl: '/success/',
+        failureUrl: '/fail/'
+    })
+    expect(correctLoginStartResponse.redirect).toBe(true)
+    expect(correctLoginStartResponse.headers.location).toEqual('/success/')
+    
+    const tokens = await setup.components.storage._mananger.collection('passwordlessToken').findObjects({})
+    expect(tokens).toEqual([
+        expect.objectContaining({
+        })
+    ])
+
+    const loginResponse = await agent.get('/auth/passwordless/login/finish').query({
+        email,
+        token: tokens[0]['tokenString'],
+    })
     fixSessionCookie(loginResponse, agent)
 
     const checkResponse = await agent.get('/auth/check')
@@ -89,4 +140,5 @@ export async function testLoginFlow({setup, agent}) {
         authenticated: true
     })
     fixSessionCookie(checkResponse, agent)
+
 }
