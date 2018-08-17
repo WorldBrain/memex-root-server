@@ -65,7 +65,7 @@ migrate:
     name: "${CI_COMMIT_REF_NAME}"
   script:
     - echo curl "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
-    - curl "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
+    # - curl "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
   only:
     - staging
     - production
