@@ -60,7 +60,7 @@ stages:
 
 migrate:
   stage: migrate
-  image: tutum/curl
+  image: sequenceiq/alpine-dev
   environment:
     name: "${CI_COMMIT_REF_NAME}"
   script:
