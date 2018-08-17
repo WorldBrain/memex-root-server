@@ -125,8 +125,14 @@ export function getRdsCredentials({tier}) {
     return {host: 'memex-cloud.cq6sab3rf0cl.eu-central-1.rds.amazonaws.com', port: 5432, username, password}
 }
 
-export function getSettings() : Settings {
-    const tier = getDeploymentTier()
+export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?, suppliedAdminAccessCode? : string} = {}) : Settings {
+    let tier = getDeploymentTier()
+
+    const adminAccessCode = getAdminAccessCode({ tier })
+    if (overwrites.tier && suppliedAdminAccessCode === adminAccessCode) {
+        tier = overwrites.tier
+    }
+
     return {
         tier,
         awsSesRegion: getAwsSesRegion(),
@@ -135,7 +141,7 @@ export function getSettings() : Settings {
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
-        adminAccessCode: getAdminAccessCode({tier}),
+        adminAccessCode: adminAccessCode,
         databaseCredentials: getRdsCredentials({tier}),
         cookieSecret: getCookieSecret({tier}),
         devOptions: parseCommandLineOptions().dev,

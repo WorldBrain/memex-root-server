@@ -9,8 +9,8 @@ import { executeDevShortcuts } from './dev-shortcuts'
 import { createHttpServer } from './server'
 import { createPassportStrategies } from './express/passport'
 
-export async function createSetup(settings? : Settings) {
-  settings = settings || getSettings()
+export async function createSetup({settings, overwrites, suppliedAdminAccessCode} : {settings? : Settings, overwrites?, suppliedAdminAccessCode? : string}) {
+  settings = settings || getSettings({overwrites, suppliedAdminAccessCode})
 
   const components = await createAppComponents({
     baseUrl: settings.baseUrl,
@@ -56,7 +56,7 @@ export function createExpressApp(
 
 
 export async function main(settings? : Settings) : Promise<any> {
-    const setup = await createSetup(settings)
+    const setup = await createSetup({settings})
     const app = createExpressApp(setup)
 
     process.once('SIGUSR2', async () => {

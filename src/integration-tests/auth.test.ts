@@ -5,7 +5,7 @@ import { fixSessionCookie } from './utils'
 
 describe('Auth service integration tests', () => {
     it('should handle the signup flow correctly', async () => {
-        const setup = await createSetup({
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -13,7 +13,7 @@ describe('Auth service integration tests', () => {
             baseUrl: 'http://localhost:8000',
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
         
@@ -51,7 +51,7 @@ describe('Auth service integration tests', () => {
     })
 
     it.skip('should handle the login flow correctly', async () => {
-        const setup = await createSetup({
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -59,7 +59,7 @@ describe('Auth service integration tests', () => {
             baseUrl: 'http://localhost:8000',
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
@@ -82,7 +82,7 @@ describe('Auth service integration tests', () => {
     })
 
     it('should handle the passwordless login flow correctly', async () => {
-        const setup = await createSetup({
+        const setup = await createSetup({settings: {
             tier: 'production',
             mailer: 'memory',
             storageBackend: 'memory',
@@ -90,7 +90,7 @@ describe('Auth service integration tests', () => {
             baseUrl: 'http://localhost:8000',
             cookieSecret: 'muahatestingmuahatestingmuahates',
             googleCredentials: {id: 'gid', secret: 'gsec'}
-        })
+        }})
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
