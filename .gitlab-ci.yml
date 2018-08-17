@@ -32,8 +32,6 @@ deploy:
   image: ruby:2.5
   environment:
     name: "${CI_COMMIT_REF_NAME}"
-  variables:
-    BASE_URL=${}
   script:
     - echo "Deploying to ${CI_ENVIRONMENT_NAME}"
     - gem install dpl
@@ -65,8 +63,6 @@ migrate:
   image: byrnedo/alpine-curl
   environment:
     name: "${CI_COMMIT_REF_NAME}"
-  # variables:
-  #   DOMAIN: sh ./get-tier-domain.sh memex.cloud ${CI_ENVIRONMENT_NAME}
   script:
     - curl "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
   only:
