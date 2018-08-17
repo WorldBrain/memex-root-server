@@ -9,9 +9,9 @@ export function authLocalRegister(appControllers : AppControllers) {
   }
 }
 
-export function authLocalLogin(appControllers : AppControllers) {
+export function authLocalLogin(appControllers : AppControllers, strategy : string) {
   return async function({req, res, next} : ExpressReqRes) {
-    passport.authenticate('local', function(err, user, info) {
+    passport.authenticate(strategy, function(err, user, info) {
       if (err) {
         return res.json({ success: false, error: 'internal' })
       }

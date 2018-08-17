@@ -47,7 +47,9 @@ deploy:
       --environment_variables=GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       --environment_variables=WORLDBRAIN_WP_CLIENT_ID=${WORLDBRAIN_WP_CLIENT_ID}
       --environment_variables=WORLDBRAIN_WP_CLIENT_SECRET=${WORLDBRAIN_WP_CLIENT_SECRET}
-      --environment_variables=MIGRATION_ACCESS_CODE=${MIGRATION_ACCESS_CODE}
+      --environment_variables=ADMIN_ACCESS_CODE=${ADMIN_ACCESS_CODE}
+      --environment_variables=RDS_USERNAME=${RDS_USERNAME}
+      --environment_variables=RDS_PASSWORD=${RDS_PASSWORD}
       --role="${AWS_LAMBDA_ROLE}"
       --module_name="build/main-lambda.js"
       --handler_name="handler"

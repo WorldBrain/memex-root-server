@@ -18,11 +18,13 @@ export async function createSetup(settings? : Settings) {
     awsSesRegion: settings.awsSesRegion,
     mailer: settings.mailer,
     storageBackend: settings.storageBackend,
+    databaseCredentials: settings.databaseCredentials,
   })
   const controllers = createAppControllers(components, settings)
   const routes = createAppRoutes(controllers)
   const passportStrategies = createPassportStrategies({
     userStorage: components.storage.users,
+    passwordlessTokenStorage: components.storage.passwordless,
     passwordHasher: components.passwordHasher,
     providerConfigurations: {
       google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},

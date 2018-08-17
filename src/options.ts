@@ -3,6 +3,7 @@ import * as yargs from 'yargs'
 import { DevShortcutCommand, DevShortcutsConfig } from './dev-shortcuts/types'
 
 export type DeploymentTier = 'development' | 'staging' | 'production'
+export type DatabaseCredentials = { host: string, port : number, username : string, password : string }
 export interface Settings {
     tier : DeploymentTier,
     awsSesRegion?: string
@@ -10,7 +11,8 @@ export interface Settings {
     storageBackend? : 'aws' | 'memory'
     domain: string
     baseUrl: string
-    migrationAccessCode? : string
+    adminAccessCode? : string
+    databaseCredentials? : DatabaseCredentials
     googleCredentials?: { id : string, secret : string }
     worldbrainOAuthCredentials? : { id : string, secret : string }
     cookieSecret: string
@@ -18,6 +20,13 @@ export interface Settings {
 }
 
 const missingEnvVar = (name : string) => new Error(`Tried to run this without providing a ${name}. Exploding for your safety  <3`)
+const requiredEnvVar = (name : string, tier : string) => {
+    const value = process.env[name]
+    if (!value && tier !== 'development') {
+        throw missingEnvVar(name)
+    }
+    return value
+}
 
 export function parseCommandLineOptions() {
     const options = yargs
@@ -106,12 +115,14 @@ export function getWorldbrainOAuthCredentials() {
     }
 }
 
-export function getMigrationAccessCode({tier}) {
-    const code = process.env.MIGRATION_ACCESS_CODE
-    if (!code && tier !== 'development') {
-        throw missingEnvVar('MIGRATION_ACCESS_CODE')
-    }
-    return code
+export function getAdminAccessCode({tier}) {
+    return requiredEnvVar('ADMIN_ACCESS_CODE', tier)
+}
+
+export function getRdsCredentials({tier}) {
+    const username = requiredEnvVar('RDS_USERNAME', tier)
+    const password = requiredEnvVar('RDS_PASSWORD', tier)
+    return {host: 'memex-cloud.cq6sab3rf0cl.eu-central-1.rds.amazonaws.com', port: 5432, username, password}
 }
 
 export function getSettings() : Settings {
@@ -124,7 +135,8 @@ export function getSettings() : Settings {
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials(),
         worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
-        migrationAccessCode: getMigrationAccessCode({tier}),
+        adminAccessCode: getAdminAccessCode({tier}),
+        databaseCredentials: getRdsCredentials({tier}),
         cookieSecret: getCookieSecret({tier}),
         devOptions: parseCommandLineOptions().dev,
     }

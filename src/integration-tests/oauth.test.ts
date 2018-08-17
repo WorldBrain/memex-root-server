@@ -7,7 +7,7 @@ import { testLoginFlow } from "./auth.test"
 import { fixSessionCookie } from './utils'
 
 describe('OAuth integration tests', () => {
-    it.only('should work only for WorldBrain', async () => {
+    it('should work only for WorldBrain', async () => {
         const worldbrainOAuthCredentials = { id: 'worldbrain-oauth-id', secret: 'worldbrain-oauth-secret' };
         const setup = await createSetup({
             tier: 'production',

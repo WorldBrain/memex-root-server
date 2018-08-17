@@ -10,7 +10,7 @@ import { setupOAuthRoutes } from './oauth'
 
 export interface ExpressAppConfig {
   routes : AppRoutes
-  passportStrategies : any[]
+  passportStrategies : {[name : string] : any}
   cookieSecret : string
   domain : string
   oauthStorage : OAuthStorage
@@ -52,7 +52,9 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
 
   app.get('/admin/migrate', route(routes.adminStorageMigrate))
   app.post('/auth/register', route(routes.authLocalRegister))
-  app.post('/auth/login', route(routes.authLocalLogin))
+  // app.post('/auth/login', route(routes.authLocalLogin))
+  app.post('/auth/passwordless/login/start', route(routes.authPasswordlessLoginStart))
+  app.get('/auth/passwordless/login/finish', route(routes.authPasswordlessLoginFinish))
   app.get('/auth/check', route(routes.authLocalCheck))
   app.get('/email/verify', route(routes.authEmailVerify))
   app.get('/auth/google', route(routes.authGoogleEntry))
@@ -60,7 +62,7 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
   app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
 }
 
-export function _configurePassport(passportStrategies : any[]) {
+export function _configurePassport(passportStrategies : {[name : string] : any}) {
   passport.serializeUser(function(user, done) {
     try {
       let serialized
@@ -85,7 +87,7 @@ export function _configurePassport(passportStrategies : any[]) {
       done(new Error('Invalid serialized user found in session'))
     }
   })
-  passportStrategies.forEach(strategy => {
-    passport.use(strategy)
-  })
+  for (const [name, strategy] of Object.entries(passportStrategies)) {
+    passport.use(name, strategy)
+  }
 }

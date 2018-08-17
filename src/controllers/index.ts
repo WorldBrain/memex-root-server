@@ -3,6 +3,7 @@ import * as adminStorage from './admin/storage'
 import * as authLocal from './auth/local'
 import * as authGoogle from './auth/google'
 import * as authEmail from './auth/email'
+import * as authPasswordless from './auth/passwordless'
 import { Settings } from '../options'
 
 export interface AppControllers {
@@ -10,17 +11,23 @@ export interface AppControllers {
     authLocalRegister : Function
     authGoogleRefresh : Function
     authEmailVerify : Function
+    authPasswordlessGenerateToken : Function
 }
 
 export function createAppControllers(appComponents : AppComponents, settings : Settings) : AppControllers {
     return {
-        adminStorageMigrate: adminStorage.migrate({storage: appComponents.storage, accessCode: settings.migrationAccessCode}),
+        adminStorageMigrate: adminStorage.migrate({storage: appComponents.storage, accessCode: settings.adminAccessCode}),
         authLocalRegister: authLocal.register({
             userStorage: appComponents.storage.users, passwordHasher: appComponents.passwordHasher,
-            mailer: appComponents.mailer, verificationEmailGenerator: appComponents.verificationEmailGenerator,
+            mailer: appComponents.mailer, emailGenerator: appComponents.verificationEmailGenerator,
             baseUrl: settings.baseUrl,
         }),
         authGoogleRefresh: authGoogle.refresh(settings.googleCredentials),
-        authEmailVerify: authEmail.verify({userStorage: appComponents.storage.users})
+        authEmailVerify: authEmail.verify({userStorage: appComponents.storage.users}),
+        authPasswordlessGenerateToken: authPasswordless.authPasswordlessGenerateToken({
+            userStorage: appComponents.storage.users, passwordlessTokenStorage: appComponents.storage.passwordless,
+            mailer: appComponents.mailer, emailGenerator: appComponents.verificationEmailGenerator,
+            baseUrl: settings.baseUrl,
+        }),
     }
 }
