@@ -80,8 +80,11 @@ export function getBaseUrl({tier} : {tier : DeploymentTier}) {
     return getOrigin({tier})
 }
 
-export function getGoogleCredentials() {
-    return { id: process.env.GOOGLE_CLIENT_ID, secret: process.env.GOOGLE_CLIENT_SECRET }
+export function getGoogleCredentials({tier} : {tier : DeploymentTier}) {
+    return {
+        id: requiredEnvVar('GOOGLE_CLIENT_ID', tier),
+        secret: requiredEnvVar('GOOGLE_CLIENT_SECRET', tier)
+    }
 }
 
 export function getCookieSecret({tier} : {tier : DeploymentTier}) {
@@ -108,18 +111,18 @@ export function getStorageBackend({tier} : {tier : DeploymentTier}) {
     return 'aws'
 }
 
-export function getWorldbrainOAuthCredentials() {
+export function getWorldbrainOAuthCredentials({tier} : {tier : DeploymentTier}) {
     return {
-        id: process.env.WORLDBRAIN_WP_CLIENT_ID,
-        secret: process.env.WORLDBRAIN_WP_CLIENT_SECRET,
+        id: requiredEnvVar('WORLDBRAIN_WP_CLIENT_ID', tier),
+        secret: requiredEnvVar('WORLDBRAIN_WP_CLIENT_SECRET', tier),
     }
 }
 
-export function getAdminAccessCode({tier}) {
+export function getAdminAccessCode({tier} : {tier : DeploymentTier}) {
     return requiredEnvVar('ADMIN_ACCESS_CODE', tier)
 }
 
-export function getRdsCredentials({tier}) {
+export function getRdsCredentials({tier} : {tier : DeploymentTier}) {
     const username = requiredEnvVar('RDS_USERNAME', tier)
     const password = requiredEnvVar('RDS_PASSWORD', tier)
     return {host: 'memex-cloud.cq6sab3rf0cl.eu-central-1.rds.amazonaws.com', port: 5432, username, password}
@@ -139,8 +142,8 @@ export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?
         storageBackend: getStorageBackend({tier}),
         domain: getDomain({tier}),
         baseUrl: getBaseUrl({tier}),
-        googleCredentials: getGoogleCredentials(),
-        worldbrainOAuthCredentials: getWorldbrainOAuthCredentials(),
+        googleCredentials: getGoogleCredentials({tier}),
+        worldbrainOAuthCredentials: getWorldbrainOAuthCredentials({tier}),
         adminAccessCode: adminAccessCode,
         databaseCredentials: getRdsCredentials({tier}),
         cookieSecret: getCookieSecret({tier}),
