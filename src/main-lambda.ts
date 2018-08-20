@@ -21,5 +21,5 @@ exports.handler = async (event, context) => {
 	const setup = await main.createSetup({overwrites: {tierOverwrite}, suppliedAdminAccessCode})
     const app = main.createExpressApp(setup)
 	const server = awsServerlessExpress.createServer(app, null, BINARY_MIME_TYPES)
-	return await awsServerlessExpress.proxy(server, event, context)
+	return awsServerlessExpress.proxy(server, event, context)
 }
