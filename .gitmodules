@@ -1,4 +1,4 @@
 [submodule "src/components/storage/storex"]
 	path = src/components/storage/manager
-	url = git@github.com:WorldBrain/storex.git
+	url = https://github.com/WorldBrain/storex.git
 	branch = memex-root-service

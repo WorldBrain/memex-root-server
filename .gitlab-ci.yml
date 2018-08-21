@@ -9,7 +9,7 @@ stages:
 
 build:
   stage: build
-  image: damilolasodiq/docker-node-ssh
+  image: node:8
   script:
     - npm install
     - npm run prepare
