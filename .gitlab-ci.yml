@@ -44,6 +44,7 @@ deploy:
       --region=eu-central-1
       --function_name="${LAMBDA_FUNCTION_PREFIX}-${CI_ENVIRONMENT_NAME}"
       --environment_variables=TIER=${CI_ENVIRONMENT_NAME}
+      --environment_variables=COOKIE_SECRET=${COOKIE_SECRET}
       --environment_variables=GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       --environment_variables=GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       --environment_variables=WORLDBRAIN_WP_CLIENT_ID=${WORLDBRAIN_WP_CLIENT_ID}

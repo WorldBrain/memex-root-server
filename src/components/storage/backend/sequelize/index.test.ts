@@ -1,4 +1,4 @@
-import { testStorageBackend } from "../../manager/index.tests"
+import { testStorageBackend } from "../../manager/ts/index.tests"
 import { SequelizeStorageBackend } from "."
 
 describe('Sequelize StorageBackend integration tests', () => {

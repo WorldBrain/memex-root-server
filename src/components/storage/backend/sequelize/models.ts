@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize'
-import { StorageRegistry } from '../../manager'
-import { CollectionDefinition, CollectionDefinitionMap, isChildOfRelationship, isConnectsRelationship } from "../../manager/types"
+import { StorageRegistry } from '../../manager/ts'
+import { CollectionDefinition, CollectionDefinitionMap, isChildOfRelationship, isConnectsRelationship } from "../../manager/ts/types"
 
 const FIELD_TYPE_MAP : {[name : string] : any} = {
     'auto-pk': {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},

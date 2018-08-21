@@ -1,8 +1,8 @@
 import * as Sequelize from 'sequelize'
-import { StorageRegistry } from '../../manager'
+import { StorageRegistry } from '../../manager/ts'
 // import { CollectionDefinition } from '../../manager/types'
-import * as backend from '../../manager/types/backend'
-import { augmentCreateObject } from '../../manager/backend/utils'
+import * as backend from '../../manager/ts/types/backend'
+import { augmentCreateObject } from '../../manager/ts/backend/utils'
 import { collectionToSequelizeModel, connectSequelizeModels } from './models'
 import { operatorsAliases } from './operators'
 import { cleanRelationshipFieldsForWrite, cleanRelationshipFieldsForRead } from './utils';

@@ -1,4 +1,4 @@
-import { CollectionDefinition, isChildOfRelationship, isConnectsRelationship } from "../../manager/types"
+import { CollectionDefinition, isChildOfRelationship, isConnectsRelationship } from "../../manager/ts/types"
 
 export function cleanRelationshipFieldsForWrite(object, collectionDefinition : CollectionDefinition) {
     return _cleanRelationshipFields(object, collectionDefinition, (alias : string, fieldName : string) => {
