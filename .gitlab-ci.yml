@@ -1,5 +1,5 @@
-# variables:
-#   S3_BUCKET_NAME: "yourbucket"
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - build
