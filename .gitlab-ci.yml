@@ -53,7 +53,7 @@ deploy:
       --environment_variables=RDS_USERNAME=${RDS_USERNAME}
       --environment_variables=RDS_PASSWORD=${RDS_PASSWORD}
       --role="${AWS_LAMBDA_ROLE}"
-      --module_name="build/main-lambda.js"
+      --module_name="build/main-lambda"
       --handler_name="handler"
   only:
     - staging
