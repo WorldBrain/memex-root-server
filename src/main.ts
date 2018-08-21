@@ -31,15 +31,6 @@ export async function createSetup({settings, overwrites, suppliedAdminAccessCode
     },
   })
 
-  if (settings.worldbrainOAuthCredentials) {
-    await components.storage.oauth.createClient({
-      name: 'worldbrain.io',
-      clientId: settings.worldbrainOAuthCredentials.id,
-      clientSecret: settings.worldbrainOAuthCredentials.secret,
-      ifExists: 'retrieve'
-    })
-  }
-
   return {settings, components, controllers, routes, passportStrategies}
 }
 

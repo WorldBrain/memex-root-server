@@ -16,7 +16,11 @@ export interface AppControllers {
 
 export function createAppControllers(appComponents : AppComponents, settings : Settings) : AppControllers {
     return {
-        adminStorageMigrate: adminStorage.migrate({storage: appComponents.storage, accessCode: settings.adminAccessCode}),
+        adminStorageMigrate: adminStorage.migrate({
+            storage: appComponents.storage, accessCode: settings.adminAccessCode,
+            worldbrainOAuthCredentials: settings.worldbrainOAuthCredentials,
+            oauthStorage: appComponents.storage.oauth,
+        }),
         authLocalRegister: authLocal.register({
             userStorage: appComponents.storage.users, passwordHasher: appComponents.passwordHasher,
             mailer: appComponents.mailer, emailGenerator: appComponents.verificationEmailGenerator,
