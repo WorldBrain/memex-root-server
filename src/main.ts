@@ -72,6 +72,12 @@ export async function main(settings? : Settings) : Promise<any> {
         config: setup.settings.devOptions
       })
     }
+
+    process.on('unhandledRejection', (reason, p) => {
+      console.log('Unhandled Rejection at: ', p, 'reason:', reason);
+    });
+    
+
     return server
 }
 
