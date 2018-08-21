@@ -12,37 +12,35 @@ import { createPassportStrategies } from './express/passport'
 export async function createSetup({settings, overwrites, suppliedAdminAccessCode} : {settings? : Settings, overwrites?, suppliedAdminAccessCode? : string}) {
   settings = settings || getSettings({overwrites, suppliedAdminAccessCode})
 
-  // const components = await createAppComponents({
-  //   baseUrl: settings.baseUrl,
-  //   tier: settings.tier,
-  //   awsSesRegion: settings.awsSesRegion,
-  //   mailer: settings.mailer,
-  //   storageBackend: settings.storageBackend,
-  //   databaseCredentials: settings.databaseCredentials,
-  // })
-  // const controllers = createAppControllers(components, settings)
-  // const routes = createAppRoutes(controllers)
-  const routes = createAppRoutes(null)
-  // const passportStrategies = createPassportStrategies({
-  //   userStorage: components.storage.users,
-  //   passwordlessTokenStorage: components.storage.passwordless,
-  //   passwordHasher: components.passwordHasher,
-  //   providerConfigurations: {
-  //     google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
-  //   },
-  // })
+  const components = await createAppComponents({
+    baseUrl: settings.baseUrl,
+    tier: settings.tier,
+    awsSesRegion: settings.awsSesRegion,
+    mailer: settings.mailer,
+    storageBackend: settings.storageBackend,
+    databaseCredentials: settings.databaseCredentials,
+  })
+  const controllers = createAppControllers(components, settings)
+  const routes = createAppRoutes(controllers)
+  const passportStrategies = createPassportStrategies({
+    userStorage: components.storage.users,
+    passwordlessTokenStorage: components.storage.passwordless,
+    passwordHasher: components.passwordHasher,
+    providerConfigurations: {
+      google: {...settings.googleCredentials, callbackUrl: settings.baseUrl + '/auth/google/callback'},
+    },
+  })
 
-  // if (settings.worldbrainOAuthCredentials) {
-  //   await components.storage.oauth.createClient({
-  //     name: 'worldbrain.io',
-  //     clientId: settings.worldbrainOAuthCredentials.id,
-  //     clientSecret: settings.worldbrainOAuthCredentials.secret,
-  //     ifExists: 'retrieve'
-  //   })
-  // }
+  if (settings.worldbrainOAuthCredentials) {
+    await components.storage.oauth.createClient({
+      name: 'worldbrain.io',
+      clientId: settings.worldbrainOAuthCredentials.id,
+      clientSecret: settings.worldbrainOAuthCredentials.secret,
+      ifExists: 'retrieve'
+    })
+  }
 
-  return <any>{settings, routes}
-  // return {settings, components, controllers, routes, passportStrategies}
+  return {settings, components, controllers, routes, passportStrategies}
 }
 
 
@@ -52,8 +50,7 @@ export function createExpressApp(
 ) {
   return createApp({
     routes, passportStrategies, cookieSecret: settings.cookieSecret, domain: settings.domain,
-    oauthStorage: null,
-    // oauthStorage: components.storage.oauth
+    oauthStorage: components.storage.oauth
   })
 }
 

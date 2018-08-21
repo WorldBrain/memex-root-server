@@ -1,5 +1,5 @@
-import { CollectionDefinitionMap } from '../manager/types'
-import { StorageCollectionMap } from '../manager'
+import { CollectionDefinitionMap } from '../manager/ts/types'
+import { StorageCollectionMap } from '../manager/ts'
 
 export class StorageModule {
     collectionDefinitions : CollectionDefinitionMap

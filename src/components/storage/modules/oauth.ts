@@ -1,4 +1,4 @@
-import { CollectionDefinitionMap } from "../manager/types"
+import { CollectionDefinitionMap } from "../manager/ts/types"
 import { StorageModule } from "./types"
 
 export class OAuthStorage extends StorageModule {

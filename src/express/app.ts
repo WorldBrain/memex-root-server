@@ -19,7 +19,7 @@ export interface ExpressAppConfig {
 }
 
 export default function createApp(config : ExpressAppConfig) {
-  // _configurePassport(config.passportStrategies)
+  _configurePassport(config.passportStrategies)
   
   const app = express()
   app.use(cookieParser(config.cookieSecret))
@@ -36,7 +36,7 @@ export default function createApp(config : ExpressAppConfig) {
   app.use(passport.session())
   
   config.preConfigure && config.preConfigure(app)
-  // setupOAuthRoutes({app, oauthStorage: config.oauthStorage})
+  setupOAuthRoutes({app, oauthStorage: config.oauthStorage})
   _configureRoutes(app, config.routes, config.allowUndefinedRoutes)
   
   return app
@@ -57,8 +57,7 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
   app.get('/auth/passwordless/login/finish', route(routes.authPasswordlessLoginFinish))
   app.get('/auth/check', route(routes.authLocalCheck))
   app.get('/email/verify', route(routes.authEmailVerify))
-  // app.get('/auth/google', route(routes.authGoogleEntry))
-  app.get('/auth/google', (req, res) => res.send('BOoo!'))
+  app.get('/auth/google', route(routes.authGoogleEntry))
   app.get('/auth/google/callback', route(routes.authGoogleCallback))
   app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
 }

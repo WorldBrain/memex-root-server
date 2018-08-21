@@ -1,7 +1,7 @@
-import { DeploymentTier, Settings, DatabaseCredentials } from '../options'
+import { DeploymentTier, DatabaseCredentials } from '../options'
 import { Mailer, FilesystemMailer, AwsSesMailer, MemoryMailer } from './mailer';
 import { Storage } from './storage'
-import StorageManager from './storage/manager'
+import StorageManager from './storage/manager/ts'
 import { PasswordHasher } from './password-hasher'
 import { EmailGenerator, StaticVerificationEmailGenerator } from './email-generator'
 import { SequelizeStorageBackend } from './storage/backend/sequelize';

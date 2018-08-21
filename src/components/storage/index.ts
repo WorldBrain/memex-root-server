@@ -1,4 +1,4 @@
-import StorageManager, { StorageCollectionMap } from './manager'
+import StorageManager, { StorageCollectionMap } from './manager/ts'
 import { StorageModule } from './modules/types'
 import { UserStorage } from './modules/auth'
 import { OAuthStorage } from './modules/oauth'
