@@ -11,6 +11,21 @@ const BINARY_MIME_TYPES = [
 	'image/svg+xml'
 ]
 
+const createServer = async (
+	{suppliedAdminAccessCode, tierOverwrite} : {suppliedAdminAccessCode? : string, tierOverwrite? : string} = {}
+) => {
+	console.log('creating setup')
+	const setup = await main.createSetup({suppliedAdminAccessCode, overwrites: {tier: tierOverwrite}})
+	console.log('creating app')
+	const app = main.createExpressApp(setup)
+	console.log('creating proxy server')
+	return awsServerlessExpress.createServer(app, null, BINARY_MIME_TYPES)
+}
+
+const defaultServer = (async () => {
+	return await createServer()
+})()
+
 exports.handler = async (event, context) => {
 	console.log('executing handler')
 
@@ -22,12 +37,11 @@ exports.handler = async (event, context) => {
 
 	let server
 	try {
-		console.log('creating setup')
-		const setup = await main.createSetup({overwrites: {tierOverwrite}, suppliedAdminAccessCode})
-		console.log('creating app')
-		const app = main.createExpressApp(setup)
-		console.log('creating proxy server')
-		server = awsServerlessExpress.createServer(app, null, BINARY_MIME_TYPES)
+		if (tierOverwrite) {
+			server = await defaultServer
+		} else {
+			server = await createServer({tierOverwrite, suppliedAdminAccessCode})
+		}
 	} catch (err) {
 		console.error(err)
 		console.error(err.stack)
@@ -35,7 +49,12 @@ exports.handler = async (event, context) => {
 	}
 	
 	console.log('proxing request')
-	return awsServerlessExpress.proxy(server, event, context)
+	return new Promise((resolve, reject) => {
+		awsServerlessExpress.proxy(server, event, {
+			...context,
+			succeed: context.succeed,
+		})
+	})
 }
 
 // (async () => {

@@ -68,7 +68,7 @@ migrate:
     # - echo curl -v "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
     - >
       curl -v
-      "https://c30qypeazc.execute-api.eu-central-1.amazonaws.com/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
+      "https://c30qypeazc.execute-api.eu-central-1.amazonaws.com/latest/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
       --cookie "mirgrationAccessCode=${ADMIN_ACCESS_CODE}"
   only:
     - staging
