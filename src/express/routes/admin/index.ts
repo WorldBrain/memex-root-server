@@ -5,7 +5,7 @@ export function adminStorageMigrate(appControllers : AppControllers) {
   return async function({req, res} : ExpressReqRes) {
     const forbidden = () => res.status(403).send('Forbidden')
 
-    const suppliedAccessCode = req.query.code
+    const suppliedAccessCode = req.body.code
     if (req.cookies['mirgrationAccessCode'] !== suppliedAccessCode) {
         return forbidden()
     }

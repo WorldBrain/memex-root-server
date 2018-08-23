@@ -1,5 +1,5 @@
 import * as bluebird from 'bluebird'
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcryptjs'
 
 export class PasswordHasher {
     private saltWorkFactor : number
@@ -9,6 +9,11 @@ export class PasswordHasher {
     }
 
     async hash(password : string) {
+        // return await new Promise((resolve, reject) => {
+        //     bcrypt.hash('bacon', 8, function(err, hash) {
+        //         err ? reject(err) : resolve(hash)
+        //     })
+        // })
         const hash = await bcrypt.hash(password, this.saltWorkFactor)
         return hash
     }

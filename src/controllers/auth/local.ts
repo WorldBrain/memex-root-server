@@ -14,13 +14,17 @@ export function register(
             return { error }
         }
         
-        await mailer.send({
-            from: 'no-reply@memex.cloud',
-            to: email,
-            ...await emailGenerator.generateVerificationEmail({
-                link: `${baseUrl}/email/verify?code=${emailVerificationCode}`
-            }),
-        })
+        try {
+            await mailer.send({
+                to: email,
+                ...await emailGenerator.generateVerificationEmail({
+                    link: `${baseUrl}/email/verify?code=${emailVerificationCode}`
+                }),
+            })
+        } catch (err) {
+            console.error(err)
+            return { error: 'verification-mail-failed' }
+        }
 
         return { success: true }
     }

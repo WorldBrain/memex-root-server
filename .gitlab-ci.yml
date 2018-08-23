@@ -29,32 +29,26 @@ build:
 
 deploy:
   stage: deploy
-  image: ruby:2.5
+  image: obezuk/gitlab-ci-cloudflare:latest
   environment:
     name: "${CI_COMMIT_REF_NAME}"
   script:
     - echo "Deploying to ${CI_ENVIRONMENT_NAME}"
-    - gem install dpl
     - >
-      dpl
-      --provider=lambda
-      --runtime=nodejs8.10
-      --access_key_id="${AWS_ACCESS_KEY}"
-      --secret_access_key="${AWS_SECRET_KEY}"
-      --region=eu-central-1
-      --function_name="${LAMBDA_FUNCTION_PREFIX}-${CI_ENVIRONMENT_NAME}"
-      --environment_variables=TIER=${CI_ENVIRONMENT_NAME}
-      --environment_variables=COOKIE_SECRET=${COOKIE_SECRET}
-      --environment_variables=GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      --environment_variables=GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      --environment_variables=WORLDBRAIN_WP_CLIENT_ID=${WORLDBRAIN_WP_CLIENT_ID}
-      --environment_variables=WORLDBRAIN_WP_CLIENT_SECRET=${WORLDBRAIN_WP_CLIENT_SECRET}
-      --environment_variables=ADMIN_ACCESS_CODE=${ADMIN_ACCESS_CODE}
-      --environment_variables=RDS_USERNAME=${RDS_USERNAME}
-      --environment_variables=RDS_PASSWORD=${RDS_PASSWORD}
-      --role="${AWS_LAMBDA_ROLE}"
-      --module_name="build/main-lambda"
-      --handler_name="handler"
+      if [ "${NEEDS_SET_ENV}" = "true" ]; then eb setenv
+        TIER=${CI_ENVIRONMENT_NAME}
+        COOKIE_SECRET=${COOKIE_SECRET}
+        GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+        GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+        WORLDBRAIN_WP_CLIENT_ID=${WORLDBRAIN_WP_CLIENT_ID}
+        WORLDBRAIN_WP_CLIENT_SECRET=${WORLDBRAIN_WP_CLIENT_SECRET}
+        ADMIN_ACCESS_CODE=${ADMIN_ACCESS_CODE}
+        AWS_SES_KEY=${AWS_SES_KEY}
+        AWS_SES_SECRET=${AWS_SES_SECRET}
+        RDS_USERNAME=${RDS_USERNAME}
+        RDS_PASSWORD=${RDS_PASSWORD};
+      fi
+    - eb deploy
   only:
     - staging
     - production

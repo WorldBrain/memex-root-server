@@ -15,7 +15,6 @@ export function authPasswordlessGenerateToken(
         const token = await passwordlessTokenStorage.createToken({email})
         
         await mailer.send({
-            from: 'Memex Cloud <no-reply@memex.cloud>',
             to: email,
             ...await emailGenerator.generateLoginEmail({
                 link: `${baseUrl}/email/verify?code=${token}`

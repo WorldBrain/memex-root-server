@@ -6,6 +6,7 @@ import { augmentCreateObject } from '../../manager/ts/backend/utils'
 import { collectionToSequelizeModel, connectSequelizeModels } from './models'
 import { operatorsAliases } from './operators'
 import { cleanRelationshipFieldsForWrite, cleanRelationshipFieldsForRead } from './utils';
+import { createPostgresDatabaseIfNecessary } from './create-database';
 
 export class SequelizeStorageBackend extends backend.StorageBackend {
     private sequelizeConfig : Sequelize.Options | string
@@ -56,6 +57,10 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
     }
 
     async migrate() {
+        if (typeof this.sequelizeConfig !== 'string' && this.sequelizeConfig['dialect'] === 'postgres') {
+            const { host, port, username, password, database } = this.sequelizeConfig
+            await createPostgresDatabaseIfNecessary({ host, port, username, password, database })
+        }
         await this.sequelize.sync()
     }
 
@@ -64,22 +69,23 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
     }
 
     async createObject(collection : string, object, options? : backend.CreateSingleOptions & {_transaction?}) : Promise<backend.CreateSingleResult> {
-        console.log('creating object in collection', collection)
+        // console.log('creating object in collection', collection)
         const model = this.sequelizeModels[collection]
         const cleanedObject = cleanRelationshipFieldsForWrite(object, this.registry.collections[collection])
         const instance = await model.create(cleanedObject, {transaction: options._transaction})
-        console.log('created object in collection', collection)
+        // console.log('created object in collection', collection)
         return {object: instance.dataValues}
     }
     
     async findObjects<T>(collection : string, query, options = {}) : Promise<Array<T>> {
-        console.log('finding object in collection', collection)
+        // console.log('finding object in collection', collection)
+        const collectionDefinition = this.registry.collections[collection]
         const model = this.sequelizeModels[collection]
-        const instances = await model.findAll({where: query})
-        console.log('done finding object in collection', collection)
+        const instances = await model.findAll({where: cleanRelationshipFieldsForWrite(query, collectionDefinition)})
+        // console.log('done finding object in collection', collection)
         return instances.map(instance => cleanRelationshipFieldsForRead(
             instance.dataValues,
-            this.registry.collections[collection]
+            collectionDefinition
         ))
     }
     

@@ -50,7 +50,21 @@ export class UserStorage extends StorageModule {
         const identifier = `email:${email}`
         const existingUser = await this.collections.user.findOneObject({identifier})
         if (existingUser) {
-            return { error: 'exists' }
+            if (existingUser['isActive']) {
+                return { error: 'exists' }
+            }
+
+            // Hack, should be done automatically in future
+            const code = await this.collectionDefinitions['userEmailVerificationCode']['fields']['code'].fieldObject.prepareForStorage(undefined)
+
+            const email = await this.collections.userEmail.findOneObject({user: existingUser['id']})
+            const verificationCode = await this.collections.userEmailVerificationCode.findOneObject({ userEmail: email['id'] })
+            const codeId = verificationCode['id']
+            await this.collections.userEmailVerificationCode.updateOneObject(
+                {id: codeId},
+                {code, expires: Date.now() + 1000 * 60 * 60 * 24}
+            )
+            return {emailVerificationCode: code, codeId}
         }
 
         const {object: user} = await this.collections.user.createObject({
@@ -70,7 +84,8 @@ export class UserStorage extends StorageModule {
         })
 
         return {
-            emailVerificationCode: user.emails[0].verificationCode.code
+            emailVerificationCode: user.emails[0].verificationCode.code,
+            codeId: user.emails[0].verificationCode.id
         }
     }
 

@@ -91,21 +91,11 @@ Temporary Items
 
 # End of https://www.gitignore.io/api/osx,node
 
-./db
-/build
-browserify-cache.json
-assets/build/script.js
-
 # Used as root for local development server
 public
 
-env-*.json
-claudia.json
+# Git folder
+.git
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/config.yml
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
-set-env-vars.sh
+# Docs
+/docs

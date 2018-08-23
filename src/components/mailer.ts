@@ -2,9 +2,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as nodemailer from 'nodemailer'
 import * as ses from 'node-ses'
+import { AwsSesSettings } from '../options';
 
 export interface Mail {
-    from: string,
+    from?: string,
     to: string,
     subject: string,
     text: string,
@@ -23,6 +24,8 @@ export class NodeMailer implements Mailer {
     }
 
     async send(message: Mail) {
+        message.from = message.from || 'Memex Cloud <no-reply@memex.cloud>'
+
         return new Promise((resolve, reject) => {
             this.transport.sendMail(message, (err) => err ? reject(err) : resolve())
         })
@@ -32,11 +35,13 @@ export class NodeMailer implements Mailer {
 export class AwsSesMailer implements Mailer {
     private sesClient
 
-    constructor() {
-        this.sesClient = ses.createClient()
+    constructor(settings : AwsSesSettings) {
+        this.sesClient = ses.createClient(settings)
     }
 
     async send(mail: Mail) {
+        mail.from = mail.from || 'Memex Cloud <no-reply@memex.cloud>'
+
         await new Promise((resolve, reject) => {
             const message = mail.html ? mail.html : mail.text
             const altText = mail.html ? {altText: mail.text} : {}

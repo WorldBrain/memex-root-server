@@ -4,9 +4,10 @@ import { DevShortcutCommand, DevShortcutsConfig } from './dev-shortcuts/types'
 
 export type DeploymentTier = 'development' | 'staging' | 'production'
 export type DatabaseCredentials = { host: string, port : number, username : string, password : string }
+export type AwsSesSettings = {region : string, key : string, secret : string}
 export interface Settings {
     tier : DeploymentTier,
-    awsSesRegion?: string
+    awsSesSettings?: AwsSesSettings
     mailer?: 'ses' | 'fs' | 'memory'
     storageBackend? : 'aws' | 'memory'
     domain: string
@@ -99,8 +100,12 @@ export function getCookieSecret({tier} : {tier : DeploymentTier}) {
     return secret
 }
 
-export function getAwsSesRegion() {
-    return process.env.AWS_SES_REGION || 'us-east-1'
+export function getAwsSesSettings() : AwsSesSettings {
+    return {
+        region: process.env.AWS_SES_REGION || 'us-east-1',
+        key: process.env.AWS_SES_KEY,
+        secret: process.env.AWS_SES_SECRET,
+    }
 }
 
 export function getStorageBackend({tier} : {tier : DeploymentTier}) {
@@ -132,13 +137,13 @@ export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?
     let tier = getDeploymentTier()
 
     const adminAccessCode = getAdminAccessCode({ tier })
-    if (overwrites.tier && suppliedAdminAccessCode === adminAccessCode) {
+    if (overwrites && overwrites.tier && suppliedAdminAccessCode === adminAccessCode) {
         tier = overwrites.tier
     }
 
     return {
         tier,
-        awsSesRegion: getAwsSesRegion(),
+        awsSesSettings: getAwsSesSettings(),
         storageBackend: getStorageBackend({tier}),
         domain: getDomain({tier}),
         baseUrl: getBaseUrl({tier}),

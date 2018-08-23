@@ -1,5 +1,6 @@
-import { DeploymentTier, DatabaseCredentials } from '../options'
-import { Mailer, FilesystemMailer, AwsSesMailer, MemoryMailer } from './mailer';
+import * as AWS from 'aws-sdk'
+import { DeploymentTier, DatabaseCredentials, AwsSesSettings } from '../options'
+import { Mailer, FilesystemMailer, AwsSesMailer, MemoryMailer, NodeMailer } from './mailer';
 import { Storage } from './storage'
 import StorageManager from './storage/manager/ts'
 import { PasswordHasher } from './password-hasher'
@@ -15,7 +16,7 @@ export interface AppComponents {
 
 export interface AppComponentsConfig {
   baseUrl : string
-  awsSesRegion : string
+  awsSesSettings : AwsSesSettings
   databaseCredentials : DatabaseCredentials
   mailer? : string
   storageBackend? : 'aws' | 'memory'
@@ -35,31 +36,7 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
 
   return {
     storage: await asyncAllowOverride<Storage>('storage', async () : Promise<Storage> => {
-      if (config.storageBackend === 'memory') {
-        const backend = new SequelizeStorageBackend({sequelizeConfig: 'sqlite://'})
-        const storageManager = new StorageManager({backend})
-        const storage = new Storage({storageManager})
-        await backend.migrate()
-        return storage
-      }
-
-      const backend = new SequelizeStorageBackend({
-        sequelizeConfig: {
-          ...config.databaseCredentials,
-          database: `auth-${config.tier}`,
-          logging: console.log,
-          maxConcurrentQueries: 100,
-          dialect: 'postgres',
-          dialectOptions: {
-              ssl: 'Amazon RDS'
-          },
-          pool: { maxConnections: 5, maxIdleTime: 30},
-          language: 'en'
-        }
-      })
-      
-      const storageManager = new StorageManager({backend})
-      return new Storage({storageManager})
+      return await createStorage({backend: config.storageBackend, databaseCredentials: config.databaseCredentials, tier: config.tier})
     }),
     mailer: allowOverride('mailer', () => {
       if (config.mailer === 'memory') {
@@ -69,11 +46,43 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
       const mailer =
         config.tier === 'development'
         ? new FilesystemMailer('/tmp/')
-        : new AwsSesMailer()
+        : new NodeMailer({
+          SES: new AWS.SES({
+            region: config.awsSesSettings.region
+          })
+        })
 
       return mailer
     }),
     passwordHasher: allowOverride('passwordHasher', () => new PasswordHasher({saltWorkFactor: 10})),
     verificationEmailGenerator: allowOverride('verificationEmailGenerator', () => new StaticVerificationEmailGenerator())
   }
+}
+
+export async function createStorage(config : {backend : 'aws' | 'memory', databaseCredentials? : DatabaseCredentials, tier? : string}) {
+  if (config.backend === 'memory') {
+    const backend = new SequelizeStorageBackend({sequelizeConfig: 'sqlite://'})
+    const storageManager = new StorageManager({backend})
+    const storage = new Storage({storageManager})
+    await backend.migrate()
+    return storage
+  }
+
+  const backend = new SequelizeStorageBackend({
+    sequelizeConfig: {
+      ...config.databaseCredentials,
+      database: `auth_${config.tier}`,
+      logging: false,
+      maxConcurrentQueries: 100,
+      dialect: 'postgres',
+      dialectOptions: {
+          ssl: 'Amazon RDS'
+      },
+      pool: { maxConnections: 5, maxIdleTime: 30},
+      language: 'en'
+    }
+  })
+  
+  const storageManager = new StorageManager({backend})
+  return new Storage({storageManager})
 }
