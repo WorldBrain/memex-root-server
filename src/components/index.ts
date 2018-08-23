@@ -68,6 +68,11 @@ export async function createStorage(config : {backend : 'aws' | 'memory', databa
     return storage
   }
 
+  const databases = ['auth_production']
+  if (config.tier === 'staging') {
+    databases.unshift('auth_staging')
+  }
+
   const backend = new SequelizeStorageBackend({
     sequelizeConfig: {
       ...config.databaseCredentials,
@@ -80,7 +85,9 @@ export async function createStorage(config : {backend : 'aws' | 'memory', databa
       },
       pool: { maxConnections: 5, maxIdleTime: 30},
       language: 'en'
-    }
+    },
+    databases,
+    defaultDatabase: `auth_${config.tier}`
   })
   
   const storageManager = new StorageManager({backend})

@@ -1,3 +1,4 @@
+const mapValues = require('lodash/fp/mapValues')
 import * as Sequelize from 'sequelize'
 import { StorageRegistry } from '../../manager/ts'
 // import { CollectionDefinition } from '../../manager/types'
@@ -10,13 +11,17 @@ import { createPostgresDatabaseIfNecessary } from './create-database';
 
 export class SequelizeStorageBackend extends backend.StorageBackend {
     private sequelizeConfig : Sequelize.Options | string
-    private sequelize : Sequelize.Sequelize
-    private sequelizeModels : {[name : string]: any} = {}
+    private sequelize : {[database : string]: Sequelize.Sequelize}
+    private sequelizeModels : {[database : string]: {[name : string]: any}} = {}
+    private defaultDatabase : string
+    private databases : string[]
 
-    constructor({sequelizeConfig} : {sequelizeConfig : any}) {
+    constructor({sequelizeConfig, defaultDatabase, databases} : {sequelizeConfig : any, defaultDatabase? : string, databases? : string[]}) {
         super()
         
         this.sequelizeConfig = sequelizeConfig
+        this.defaultDatabase = defaultDatabase || sequelizeConfig.database
+        this.databases = databases
     }
 
     configure({registry} : {registry : StorageRegistry}) {
@@ -24,8 +29,9 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
         registry.once('initialized', this._createModels)
 
         const origCreateObject = this.createObject.bind(this)
-        this.createObject = async (collection, object, options) => {
-            return await this.sequelize.transaction(async transaction => {
+        this.createObject = async (collection, object, options = {}) => {
+            const sequelize = this.sequelize[options.database || this.defaultDatabase]
+            return await sequelize.transaction(async transaction => {
                 const putObject = async (collection, object, options) => {
                     options = options || {}
                     options['_transtaction'] = transaction
@@ -43,25 +49,29 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
             operatorsAliases
         }
         if (typeof this.sequelizeConfig === 'string') {
-            this.sequelize = new Sequelize(this.sequelizeConfig, defaultOptions)
+            this.sequelize = mapValues(() => new Sequelize(<string>this.sequelizeConfig, defaultOptions), this.databases)
         } else {
-            this.sequelize = new Sequelize({
+            this.sequelize = mapValues(() => new Sequelize({
                 ...defaultOptions,
-                ...this.sequelizeConfig,
-            })
+                ...<Sequelize.Options>this.sequelizeConfig,
+            }), this.databases)
         }
-        for (const [name, definition] of Object.entries(this.registry.collections)){
-            this.sequelizeModels[name] = this.sequelize.define(name, collectionToSequelizeModel({definition, registry: this.registry}))
+        for (const database of this.databases) {
+            for (const [name, definition] of Object.entries(this.registry.collections)){
+                this.sequelizeModels[database][name] = this.sequelize[database].define(
+                    name, collectionToSequelizeModel({definition, registry: this.registry})
+                )
+            }
         }
         connectSequelizeModels({registry: this.registry, models: this.sequelizeModels})
     }
 
-    async migrate() {
+    async migrate({database} : {database? : string} = {}) {
         if (typeof this.sequelizeConfig !== 'string' && this.sequelizeConfig['dialect'] === 'postgres') {
             const { host, port, username, password, database } = this.sequelizeConfig
             await createPostgresDatabaseIfNecessary({ host, port, username, password, database })
         }
-        await this.sequelize.sync()
+        await this.sequelize[database || this.defaultDatabase].sync()
     }
 
     async cleanup() : Promise<any> {
