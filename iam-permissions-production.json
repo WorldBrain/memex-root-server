@@ -20,6 +20,6 @@
         "ses:SendRawEmail"
       ],
       "Resource": "*"
-    },
+    }
   ]
 }

@@ -1,3 +1,4 @@
+const fromPairs = require('lodash/fp/fromPairs')
 const mapValues = require('lodash/fp/mapValues')
 import * as Sequelize from 'sequelize'
 import { StorageRegistry } from '../../manager/ts'
@@ -49,12 +50,13 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
             operatorsAliases
         }
         if (typeof this.sequelizeConfig === 'string') {
-            this.sequelize = mapValues(() => new Sequelize(<string>this.sequelizeConfig, defaultOptions), this.databases)
+            this.sequelize = fromPairs(this.databases.map(database => [database, new Sequelize(<string>this.sequelizeConfig, defaultOptions)]))
         } else {
-            this.sequelize = mapValues(() => new Sequelize({
+            this.sequelize = fromPairs(this.databases.map(database => [database, new Sequelize({
                 ...defaultOptions,
                 ...<Sequelize.Options>this.sequelizeConfig,
-            }), this.databases)
+                database,
+            })]))
         }
         for (const database of this.databases) {
             for (const [name, definition] of Object.entries(this.registry.collections)){
