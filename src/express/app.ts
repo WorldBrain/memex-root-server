@@ -50,7 +50,8 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
     return (req, res) => f({req, res})
   }
 
-  app.post('/admin/migrate', route(routes.adminStorageMigrate))
+  app.post('/admin/hooks/pre-deploy', route(routes.adminHooksPreDeploy))
+  app.post('/admin/hooks/post-deploy', route(routes.adminHooksPostDeploy))
   app.post('/auth/register', route(routes.authLocalRegister))
   // app.post('/auth/login', route(routes.authLocalLogin))
   app.post('/auth/passwordless/login/start', route(routes.authPasswordlessLoginStart))

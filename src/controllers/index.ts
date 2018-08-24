@@ -1,5 +1,5 @@
 import { AppComponents } from '../components'
-import * as adminStorage from './admin/storage'
+import * as adminHooks from './admin/hooks'
 import * as authLocal from './auth/local'
 import * as authGoogle from './auth/google'
 import * as authEmail from './auth/email'
@@ -7,7 +7,8 @@ import * as authPasswordless from './auth/passwordless'
 import { Settings } from '../options'
 
 export interface AppControllers {
-    adminStorageMigrate : Function
+    adminHooksPreDeploy : Function
+    adminHooksPostDeploy : Function
     authLocalRegister : Function
     authGoogleRefresh : Function
     authEmailVerify : Function
@@ -16,7 +17,12 @@ export interface AppControllers {
 
 export function createAppControllers(appComponents : AppComponents, settings : Settings) : AppControllers {
     return {
-        adminStorageMigrate: adminStorage.migrate({
+        adminHooksPreDeploy: adminHooks.preDeploy({
+            storage: appComponents.storage, accessCode: settings.adminAccessCode,
+            worldbrainOAuthCredentials: settings.worldbrainOAuthCredentials,
+            oauthStorage: appComponents.storage.oauth,
+        }),
+        adminHooksPostDeploy: adminHooks.postDeploy({
             storage: appComponents.storage, accessCode: settings.adminAccessCode,
             worldbrainOAuthCredentials: settings.worldbrainOAuthCredentials,
             oauthStorage: appComponents.storage.oauth,

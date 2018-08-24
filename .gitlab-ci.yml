@@ -4,8 +4,9 @@ variables:
 stages:
   - build
   # - test
+  - pre-deploy-hooks
   - deploy
-  - migrate
+  - post-deploy-hooks
 
 build:
   stage: build
@@ -26,6 +27,21 @@ build:
 #   only:
 #     - staging
 #     - production
+
+pre-deploy-hooks:
+  stage: pre-deploy-hooks
+  image: sequenceiq/alpine-dev
+  environment:
+    name: "${CI_COMMIT_REF_NAME}"
+  script:
+    - >
+      curl -v
+      "https://staging.memex.cloud/admin/hooks/pre-deploy?tier=${CI_ENVIRONMENT_NAME}"
+      --data "code=${ADMIN_ACCESS_CODE}"
+      --cookie "mirgrationAccessCode=${ADMIN_ACCESS_CODE}"
+  only:
+    - staging
+    - production
 
 deploy:
   stage: deploy
@@ -53,16 +69,16 @@ deploy:
     - staging
     - production
 
-migrate:
-  stage: migrate
+post-deploy-hooks:
+  stage: post-deploy-hooks
   image: sequenceiq/alpine-dev
   environment:
     name: "${CI_COMMIT_REF_NAME}"
   script:
-    # - echo curl -v "https://staging.memex.cloud/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
     - >
       curl -v
-      "https://c30qypeazc.execute-api.eu-central-1.amazonaws.com/latest/admin/migrate&tier=${CI_ENVIRONMENT_NAME}&access-code=${ADMIN_ACCESS_CODE}"
+      "https://staging.memex.cloud/admin/hooks/post-deploy?tier=${CI_ENVIRONMENT_NAME}"
+      --data "code=${ADMIN_ACCESS_CODE}"
       --cookie "mirgrationAccessCode=${ADMIN_ACCESS_CODE}"
   only:
     - staging

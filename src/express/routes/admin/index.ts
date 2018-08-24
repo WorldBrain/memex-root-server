@@ -1,7 +1,7 @@
 import { ExpressReqRes } from '../../types'
 import { AppControllers } from '../../../controllers'
 
-export function adminStorageMigrate(appControllers : AppControllers) {
+export function adminHook(appControllers : AppControllers, hook : 'PostDeploy' | 'PreDeploy') {
   return async function({req, res} : ExpressReqRes) {
     const forbidden = () => res.status(403).send('Forbidden')
 
@@ -11,7 +11,7 @@ export function adminStorageMigrate(appControllers : AppControllers) {
     }
 
     try {
-      const result = await appControllers.adminStorageMigrate({suppliedAccessCode})
+      const result = await appControllers[`adminHooks${hook}`]({suppliedAccessCode})
       if (!result) {
           return forbidden()
       }
