@@ -21,8 +21,8 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
         super()
         
         this.sequelizeConfig = sequelizeConfig
-        this.defaultDatabase = defaultDatabase || sequelizeConfig.database
-        this.databases = databases
+        this.defaultDatabase = defaultDatabase || sequelizeConfig.database || 'default'
+        this.databases = databases || ['default']
     }
 
     configure({registry} : {registry : StorageRegistry}) {
@@ -59,13 +59,17 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
             })]))
         }
         for (const database of this.databases) {
+            this.sequelizeModels[database] = {}
+
             for (const [name, definition] of Object.entries(this.registry.collections)){
                 this.sequelizeModels[database][name] = this.sequelize[database].define(
                     name, collectionToSequelizeModel({definition, registry: this.registry})
                 )
             }
         }
-        connectSequelizeModels({registry: this.registry, models: this.sequelizeModels})
+        for (const database of this.databases) {
+            connectSequelizeModels({registry: this.registry, models: this.sequelizeModels[database]})
+        }
     }
 
     async migrate({database} : {database? : string} = {}) {
@@ -82,7 +86,7 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
 
     async createObject(collection : string, object, options? : backend.CreateSingleOptions & {_transaction?}) : Promise<backend.CreateSingleResult> {
         // console.log('creating object in collection', collection)
-        const model = this.sequelizeModels[collection]
+        const model = this.sequelizeModels[this.defaultDatabase][collection]
         const cleanedObject = cleanRelationshipFieldsForWrite(object, this.registry.collections[collection])
         const instance = await model.create(cleanedObject, {transaction: options._transaction})
         // console.log('created object in collection', collection)
@@ -92,7 +96,7 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
     async findObjects<T>(collection : string, query, options = {}) : Promise<Array<T>> {
         // console.log('finding object in collection', collection)
         const collectionDefinition = this.registry.collections[collection]
-        const model = this.sequelizeModels[collection]
+        const model = this.sequelizeModels[this.defaultDatabase][collection]
         const instances = await model.findAll({where: cleanRelationshipFieldsForWrite(query, collectionDefinition)})
         // console.log('done finding object in collection', collection)
         return instances.map(instance => cleanRelationshipFieldsForRead(
@@ -102,19 +106,19 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
     }
     
     async updateObjects(collection : string, query, updates, options : backend.UpdateManyOptions & {transaction?} = {}) : Promise<backend.UpdateManyResult> {
-        const model = this.sequelizeModels[collection]
+        const model = this.sequelizeModels[this.defaultDatabase][collection]
         await model.update(updates, {where: query}, {transaction: options._transaction})
     }
     
     async deleteObjects(collection : string, query, options : backend.DeleteManyOptions = {}) : Promise<backend.DeleteManyResult> {
         if (options.limit) {
-            const count = await this.sequelizeModels[collection].count({ where: query })
+            const count = await this.sequelizeModels[this.defaultDatabase][collection].count({ where: query })
             if (count > options.limit) {
                 throw new backend.DeletionTooBroadError(collection, query, options.limit, count)
             }
         }
 
-        const model = this.sequelizeModels[collection]
+        const model = this.sequelizeModels[this.defaultDatabase][collection]
         await model.destroy({where: query})
     }
 }
