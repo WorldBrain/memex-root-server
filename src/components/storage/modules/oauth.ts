@@ -62,7 +62,9 @@ export class OAuthStorage extends StorageModule {
 
     async findClient({id: clientId} : {id : string}) {
         const client = <any>await this.collections.oauthClient.findOneObject({clientId})
-        client.privileged = client.name === 'worldbrain.io'
+        if (client) {
+            client.privileged = client.name === 'worldbrain.io'
+        }
         return client
     }
 
@@ -96,4 +98,13 @@ export class OAuthStorage extends StorageModule {
         const token = <any>await this.collections.oauthAccessToken.findOneObject({token: tokenString})
         return token
     }
+}
+
+export async function createWorldbrainOAuthClient(oauthStorage: OAuthStorage, worldbrainOAuthCredentials: any) {
+    await oauthStorage.createClient({
+        name: 'worldbrain.io',
+        clientId: worldbrainOAuthCredentials.id,
+        clientSecret: worldbrainOAuthCredentials.secret,
+        ifExists: 'retrieve'
+    })
 }

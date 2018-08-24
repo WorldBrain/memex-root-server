@@ -5,6 +5,7 @@ import * as passport from 'passport'
 import { createSetup, createExpressApp } from '../main'
 import { testLoginFlow } from "./auth.test"
 import { fixSessionCookie } from './utils'
+import { createWorldbrainOAuthClient } from '../components/storage/modules/oauth';
 
 describe('OAuth integration tests', () => {
     it('should work only for WorldBrain', async () => {
@@ -19,6 +20,8 @@ describe('OAuth integration tests', () => {
             googleCredentials: {id: 'gid', secret: 'gsec'},
             worldbrainOAuthCredentials
         }})
+        await createWorldbrainOAuthClient(setup.components.storage.oauth, worldbrainOAuthCredentials)
+
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
