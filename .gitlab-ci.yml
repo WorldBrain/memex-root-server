@@ -64,7 +64,7 @@ deploy:
         RDS_USERNAME=${RDS_USERNAME}
         RDS_PASSWORD=${RDS_PASSWORD};
       fi
-    - eb deploy
+    - eb deploy memex-root-service-${CI_ENVIRONMENT_NAME}
   only:
     - staging
     - production
