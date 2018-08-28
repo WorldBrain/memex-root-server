@@ -23,7 +23,7 @@ export default function createApp(config : ExpressAppConfig) {
   
   const app = express()
   app.use(cookieParser(config.cookieSecret))
-  app.use(cookieEncrypter(config.cookieSecret))
+  // app.use(cookieEncrypter(config.cookieSecret))
   app.use(cookieSession({
     name: 'session',
     secret: config.cookieSecret,

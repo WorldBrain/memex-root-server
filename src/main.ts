@@ -14,6 +14,7 @@ export async function createSetup({settings, overwrites, suppliedAdminAccessCode
 
   const components = await createAppComponents({
     baseUrl: settings.baseUrl,
+    secretKey: settings.cookieSecret,
     tier: settings.tier,
     awsSesSettings: settings.awsSesSettings,
     mailer: settings.mailer,

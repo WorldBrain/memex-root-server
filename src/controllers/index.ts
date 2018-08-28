@@ -1,15 +1,16 @@
+import { Settings } from '../options'
 import { AppComponents } from '../components'
 import * as adminHooks from './admin/hooks'
 import * as authLocal from './auth/local'
 import * as authGoogle from './auth/google'
 import * as authEmail from './auth/email'
 import * as authPasswordless from './auth/passwordless'
-import { Settings } from '../options'
 
 export interface AppControllers {
     adminHooksPreDeploy : Function
     adminHooksPostDeploy : Function
     authLocalRegister : Function
+    authGoogleCallback : Function
     authGoogleRefresh : Function
     authEmailVerify : Function
     authPasswordlessGenerateToken : Function
@@ -32,7 +33,8 @@ export function createAppControllers(appComponents : AppComponents, settings : S
             mailer: appComponents.mailer, emailGenerator: appComponents.verificationEmailGenerator,
             baseUrl: settings.baseUrl,
         }),
-        authGoogleRefresh: authGoogle.refresh(settings.googleCredentials),
+        authGoogleCallback: authGoogle.callback({userDataEncrypter: appComponents.userDataEncrypter}),
+        authGoogleRefresh: authGoogle.refresh({userDataEncrypter: appComponents.userDataEncrypter, ...settings.googleCredentials}),
         authEmailVerify: authEmail.verify({userStorage: appComponents.storage.users}),
         authPasswordlessGenerateToken: authPasswordless.authPasswordlessGenerateToken({
             userStorage: appComponents.storage.users, passwordlessTokenStorage: appComponents.storage.passwordless,

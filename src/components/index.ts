@@ -6,16 +6,19 @@ import StorageManager from './storage/manager/ts'
 import { PasswordHasher } from './password-hasher'
 import { EmailGenerator, StaticVerificationEmailGenerator } from './email-generator'
 import { SequelizeStorageBackend } from './storage/backend/sequelize';
+import { UserDataEncrypter } from './user-data-encryptor';
 
 export interface AppComponents {
   storage : Storage
   mailer : Mailer
+  userDataEncrypter : UserDataEncrypter
   passwordHasher : PasswordHasher
   verificationEmailGenerator : EmailGenerator
 }
 
 export interface AppComponentsConfig {
   baseUrl : string
+  secretKey : string
   awsSesSettings : AwsSesSettings
   databaseCredentials : DatabaseCredentials
   mailer? : string
@@ -54,6 +57,7 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
 
       return mailer
     }),
+    userDataEncrypter: allowOverride('userDataEncrypter', () => new UserDataEncrypter(config.secretKey)),
     passwordHasher: allowOverride('passwordHasher', () => new PasswordHasher({saltWorkFactor: 10})),
     verificationEmailGenerator: allowOverride('verificationEmailGenerator', () => new StaticVerificationEmailGenerator())
   }
