@@ -73,11 +73,13 @@ export class SequelizeStorageBackend extends backend.StorageBackend {
     }
 
     async migrate({database} : {database? : string} = {}) {
+        database = database || this.defaultDatabase
+
         if (typeof this.sequelizeConfig !== 'string' && this.sequelizeConfig['dialect'] === 'postgres') {
-            const { host, port, username, password, database } = this.sequelizeConfig
+            const { host, port, username, password } = this.sequelizeConfig
             await createPostgresDatabaseIfNecessary({ host, port, username, password, database })
         }
-        await this.sequelize[database || this.defaultDatabase].sync()
+        await this.sequelize[database].sync()
     }
 
     async cleanup() : Promise<any> {

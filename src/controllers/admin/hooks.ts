@@ -33,7 +33,7 @@ export function _migrate(
         if (!await securelyValidateAdminAccessCode({accessCode, suppliedAccessCode})) {
             return false
         }
-        await storage._mananger.backend.migrate()
+        await storage._mananger.backend.migrate({database: `auth_${tier}`})
         if (worldbrainOAuthCredentials) {
             await createWorldbrainOAuthClient(oauthStorage, worldbrainOAuthCredentials)
         }

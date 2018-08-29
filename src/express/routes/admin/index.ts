@@ -11,7 +11,7 @@ export function adminHook(appControllers : AppControllers, hook : 'PostDeploy' |
     }
 
     try {
-      const result = await appControllers[`adminHooks${hook}`]({suppliedAccessCode})
+      const result = await appControllers[`adminHooks${hook}`]({suppliedAccessCode, tier: req.query.tier})
       if (!result) {
           return forbidden()
       }
