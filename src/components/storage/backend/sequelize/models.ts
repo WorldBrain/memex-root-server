@@ -47,6 +47,7 @@ export function connectSequelizeModels({registry, models} : {registry : StorageR
                 }
 
                 if (relationship.single) {
+                    console.log(collectionName, relationship.fieldName)
                     targetModel.hasOne(models[collectionName], {
                         foreignKey: relationship.fieldName
                     })

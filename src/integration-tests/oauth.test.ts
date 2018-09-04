@@ -53,7 +53,17 @@ describe('OAuth integration tests', () => {
         const accessToken = tokenResponse.body.access_token
         // console.log(tokenResponse.body)
 
-        const apiResponse = await request(app).get('/oauth/profile').auth(accessToken, accessToken, {type: 'bearer'})
-        expect(apiResponse.body).toEqual({id: user.id})
+        const profileResponse = await request(app).get('/oauth/profile').auth(accessToken, accessToken, {type: 'bearer'})
+        expect(profileResponse.body).toEqual({id: user.id})
+
+        const linkResponse = await request(app)
+            .post('/oauth/wp-link')
+            .auth(accessToken, accessToken, {type: 'bearer'})
+            .send({
+                user_id: '666',
+            })
+        expect(linkResponse.text).toEqual('OK')
+
+        expect(await setup.components.storage.wpLinks.getWordpressId({user: user.id})).toEqual('666')
     })
 })

@@ -6,10 +6,11 @@ import transactionLoader = require('oauth2orize/lib/middleware/transactionLoader
 import { ensureLoggedIn } from 'connect-ensure-login'
 import { OAuthStorage } from '../components/storage/modules/oauth'
 import { UserStorage } from '../components/storage/modules/auth'
+import { WpLinkStorage } from '../components/storage/modules/wp-link';
 
 export function setupOAuthRoutes(
-    { app, oauthStorage, userStorage }:
-        { app, oauthStorage: OAuthStorage, userStorage : UserStorage }
+    { app, oauthStorage, userStorage, wpLinkStorage }:
+        { app, oauthStorage: OAuthStorage, userStorage : UserStorage, wpLinkStorage : WpLinkStorage }
 ) {
     var server = oauth2orize.createServer()
 
@@ -133,12 +134,19 @@ export function setupOAuthRoutes(
         server.errorHandler()
     )
 
-    // Specific for WB WordPress, let it know the internal user ID
+    // Specific for WB WordPress, let it know our internal user ID and send it's user ID to us
     app.get('/oauth/profile',
         passport.authenticate('bearer', { session: false }),
         async function (req, res) {
             const user = await userStorage.findById(req.user.userId)
             res.json({id: user['id']})
+        }
+    )
+    app.post('/oauth/wp-link',
+        passport.authenticate('bearer', { session: false }),
+        async function (req, res) {
+            const user = await wpLinkStorage.linkUser({user: req.user.userId, wpId: req.body['user_id']})
+            res.send('OK')
         }
     )
 }

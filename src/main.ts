@@ -43,7 +43,8 @@ export function createExpressApp(
   return createApp({
     routes, passportStrategies, cookieSecret: settings.cookieSecret, domain: settings.domain,
     userStorage: components.storage.users,
-    oauthStorage: components.storage.oauth
+    oauthStorage: components.storage.oauth,
+    wpLinkStorage: components.storage.wpLinks,
   })
 }
 
