@@ -25,7 +25,7 @@ describe('OAuth integration tests', () => {
         const app = createExpressApp(setup)
         const agent = request.agent(app)
 
-        await testLoginFlow({setup, agent})
+        const {user} = await testLoginFlow({setup, agent})
 
         const redirectUri = 'https://bla.com/oauth/callback';
         const startResponse = await agent.get('/oauth/start').query({
@@ -51,16 +51,9 @@ describe('OAuth integration tests', () => {
             client_secret: worldbrainOAuthCredentials.secret,
         })
         const accessToken = tokenResponse.body.access_token
+        // console.log(tokenResponse.body)
 
-        app.get('/api/userinfo',
-            passport.authenticate('bearer', { session: false }),
-            async function (req, res) {
-                const user = await setup.components.storage.users.findById(req.user.userId)
-                res.json({identifier: user['identifier']})
-            }
-        )
-
-        const apiResponse = await request(app).get('/api/userinfo').auth(accessToken, accessToken, {type: 'bearer'})
-        expect(apiResponse.body).toEqual({identifier: 'email:something@foo.com'})
+        const apiResponse = await request(app).get('/oauth/profile').auth(accessToken, accessToken, {type: 'bearer'})
+        expect(apiResponse.body).toEqual({id: user.id})
     })
 })

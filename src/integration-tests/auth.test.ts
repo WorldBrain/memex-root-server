@@ -101,7 +101,7 @@ describe('Auth service integration tests', () => {
 export async function testLoginFlow({setup, agent}) {
     const email = 'something@foo.com', password = 'ulnevaguess'
     const passwordHash = await setup.components.passwordHasher.hash(password)
-    await setup.components.storage._mananger.collection('user').createObject({
+    const {object: user} = await setup.components.storage._mananger.collection('user').createObject({
         identifier: `email:${email}`,
         passwordHash,
         isActive: true,
@@ -141,4 +141,5 @@ export async function testLoginFlow({setup, agent}) {
     })
     fixSessionCookie(checkResponse, agent)
 
+    return {user}
 }

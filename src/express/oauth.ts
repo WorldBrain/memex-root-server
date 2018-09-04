@@ -5,10 +5,11 @@ import * as oauth2orize from 'oauth2orize'
 import transactionLoader = require('oauth2orize/lib/middleware/transactionLoader')
 import { ensureLoggedIn } from 'connect-ensure-login'
 import { OAuthStorage } from '../components/storage/modules/oauth'
+import { UserStorage } from '../components/storage/modules/auth'
 
 export function setupOAuthRoutes(
-    { app, oauthStorage }:
-        { app, oauthStorage: OAuthStorage }
+    { app, oauthStorage, userStorage }:
+        { app, oauthStorage: OAuthStorage, userStorage : UserStorage }
 ) {
     var server = oauth2orize.createServer()
 
@@ -130,5 +131,14 @@ export function setupOAuthRoutes(
         passport.authenticate(['oauth2-client-password'], { session: false }),
         server.token(),
         server.errorHandler()
+    )
+
+    // Specific for WB WordPress, let it know the internal user ID
+    app.get('/oauth/profile',
+        passport.authenticate('bearer', { session: false }),
+        async function (req, res) {
+            const user = await userStorage.findById(req.user.userId)
+            res.json({id: user['id']})
+        }
     )
 }
