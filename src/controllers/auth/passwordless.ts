@@ -9,18 +9,24 @@ export function authPasswordlessGenerateToken(
 ) {
     return async ({email} : {email : string, password : string}) => {
         if (!await userStorage.findByIdentifier(`email:${email}`)) {
-            return { success: false }
+            return { success: false, error: 'unknown-email' }
         }
 
-        const token = await passwordlessTokenStorage.createToken({email})
-        
-        await mailer.send({
-            to: email,
-            ...await emailGenerator.generateLoginEmail({
-                link: `${baseUrl}/email/verify?code=${token}`
-            }),
-        })
-
-        return { success: true }
+        try {
+            const token = await passwordlessTokenStorage.createToken({email})
+            
+            await mailer.send({
+                to: email,
+                ...await emailGenerator.generateLoginEmail({
+                    link: `${baseUrl}/email/verify?code=${token}`
+                }),
+            })
+        } catch (err) {
+            console.error(err)
+            console.trace()
+            return {success: false, error: 'internal'}
+        }
+            
+        return { success: true, error: null }
     }
 }

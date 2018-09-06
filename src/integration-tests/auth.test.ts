@@ -107,7 +107,7 @@ export async function testLoginFlow({setup, agent}) {
         isActive: true,
     })
 
-    const wrongLoginStartResponse = await agent.post('/auth/passwordless/login/start').send({
+    const wrongLoginStartResponse = await agent.post('/auth/passwordless/login/start?responseType=redirect').send({
         email: 'idont@exist.com',
         successUrl: '/success/',
         failureUrl: '/fail/'
@@ -115,7 +115,7 @@ export async function testLoginFlow({setup, agent}) {
     expect(wrongLoginStartResponse.redirect).toBe(true)
     expect(wrongLoginStartResponse.headers.location).toEqual('/fail/')
     
-    const correctLoginStartResponse = await agent.post('/auth/passwordless/login/start').send({
+    const correctLoginStartResponse = await agent.post('/auth/passwordless/login/start?responseType=redirect').send({
         email,
         successUrl: '/success/',
         failureUrl: '/fail/'

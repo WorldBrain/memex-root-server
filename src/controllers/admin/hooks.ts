@@ -35,7 +35,7 @@ export function _migrate(
         }
         await storage._mananger.backend.migrate({database: `auth_${tier}`})
         if (worldbrainOAuthCredentials) {
-            await createWorldbrainOAuthClient(oauthStorage, worldbrainOAuthCredentials)
+            await createWorldbrainOAuthClient(oauthStorage, worldbrainOAuthCredentials, tier)
         }
         return true
     }

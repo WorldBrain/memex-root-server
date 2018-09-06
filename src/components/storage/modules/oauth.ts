@@ -45,8 +45,8 @@ export class OAuthStorage extends StorageModule {
     }
 
     async createClient(
-        {name, clientId, clientSecret, ifExists} :
-        {name : string, clientId? : string, clientSecret? : string, ifExists : 'retrieve' | 'error'}
+        {name, clientId, clientSecret, ifExists, tier} :
+        {name : string, clientId? : string, clientSecret? : string, ifExists : 'retrieve' | 'error', tier? : string}
     ) {
         const existingClient = await this.collections.oauthClient.findOneObject({name})
         if (existingClient) {
@@ -57,7 +57,8 @@ export class OAuthStorage extends StorageModule {
             }
         }
 
-        return (await this.collections.oauthClient.createObject({name, clientId, clientSecret})).object
+        const options = tier && {database: `auth_${tier}`}
+        return (await this.collections.oauthClient.createObject({name, clientId, clientSecret}, options)).object
     }
 
     async findClient({id: clientId} : {id : string}) {
@@ -100,11 +101,12 @@ export class OAuthStorage extends StorageModule {
     }
 }
 
-export async function createWorldbrainOAuthClient(oauthStorage: OAuthStorage, worldbrainOAuthCredentials: any) {
+export async function createWorldbrainOAuthClient(oauthStorage: OAuthStorage, worldbrainOAuthCredentials: any, tier : string) {
     await oauthStorage.createClient({
         name: 'worldbrain.io',
         clientId: worldbrainOAuthCredentials.id,
         clientSecret: worldbrainOAuthCredentials.secret,
-        ifExists: 'retrieve'
+        ifExists: 'retrieve',
+        tier
     })
 }

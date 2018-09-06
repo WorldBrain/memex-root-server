@@ -3,13 +3,15 @@ import { AppControllers } from "../../../controllers"
 
 export function loginStart(appControllers: AppControllers) {
   return async function ({ req, res }: ExpressReqRes) {
-    const { success } = await appControllers.authPasswordlessGenerateToken({ email: req.body.email })
+    const { success, error } = await appControllers.authPasswordlessGenerateToken({ email: req.body.email })
+    const responseType = req.query.responseType || 'redirect'
     
-    const urls = {success: req.body.successUrl, fail: req.body.failureUrl}
-    if (success) {
-        res.redirect(urls.success)
+    if (responseType === 'redirect') {
+      const urls = {success: req.body.successUrl, fail: req.body.failureUrl}
+      const url = success ? urls.success : urls.fail
+      res.redirect(url)
     } else {
-        res.redirect(urls.fail)
+      res.json({success, error})
     }
   }
 }
