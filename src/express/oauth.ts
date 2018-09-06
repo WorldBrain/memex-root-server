@@ -3,10 +3,22 @@ import ClientPasswordStrategy = require('passport-oauth2-client-password')
 import BearerStrategy = require('passport-http-bearer')
 import * as oauth2orize from 'oauth2orize'
 import transactionLoader = require('oauth2orize/lib/middleware/transactionLoader')
-import { ensureLoggedIn } from 'connect-ensure-login'
+// import { ensureLoggedIn } from 'connect-ensure-login'
 import { OAuthStorage } from '../components/storage/modules/oauth'
 import { UserStorage } from '../components/storage/modules/auth'
 import { WpLinkStorage } from '../components/storage/modules/wp-link';
+
+export function ensureLoggedIn() {
+    return (req, res, next) => {
+        if (!req.isAuthenticated || !req.isAuthenticated()) {
+            const returnTo = req.originalUrl || req.url
+            const url = `https://static.memex.cloud/auth/login?returnTo=${encodeURIComponent(returnTo)}`
+            return res.redirect(url)
+        }
+
+        next()
+    }
+}
 
 export function setupOAuthRoutes(
     { app, oauthStorage, userStorage, wpLinkStorage }:

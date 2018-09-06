@@ -20,7 +20,7 @@ describe('OAuth integration tests', () => {
             googleCredentials: {id: 'gid', secret: 'gsec'},
             worldbrainOAuthCredentials
         }})
-        await createWorldbrainOAuthClient(setup.components.storage.oauth, worldbrainOAuthCredentials)
+        await createWorldbrainOAuthClient(setup.components.storage.oauth, worldbrainOAuthCredentials, undefined)
 
         const app = createExpressApp(setup)
         const agent = request.agent(app)

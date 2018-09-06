@@ -18,7 +18,7 @@ export function register(
             await mailer.send({
                 to: email,
                 ...await emailGenerator.generateVerificationEmail({
-                    link: `${baseUrl}/email/verify?code=${emailVerificationCode}`
+                    link: `https://static.memex.cloud/email/verify?code=${emailVerificationCode}`
                 }),
             })
         } catch (err) {
