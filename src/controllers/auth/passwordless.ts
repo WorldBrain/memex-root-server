@@ -18,7 +18,7 @@ export function authPasswordlessGenerateToken(
             await mailer.send({
                 to: email,
                 ...await emailGenerator.generateLoginEmail({
-                    link: `https://static.memex.cloud/auth/login/finish?code=${token}`
+                    link: `https://static.memex.cloud/auth/login/finish?email=${encodeURIComponent(email)}&code=${token}`
                 }),
             })
         } catch (err) {

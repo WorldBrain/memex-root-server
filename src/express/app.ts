@@ -61,7 +61,7 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
   app.post('/auth/register', route(routes.authLocalRegister))
   // app.post('/auth/login', route(routes.authLocalLogin))
   app.post('/auth/passwordless/login/start', route(routes.authPasswordlessLoginStart))
-  app.get('/auth/passwordless/login/finish', route(routes.authPasswordlessLoginFinish))
+  app.post('/auth/passwordless/login/finish', route(routes.authPasswordlessLoginFinish))
   app.get('/auth/check', route(routes.authLocalCheck))
   app.get('/email/verify', route(routes.authEmailVerify))
   app.get('/auth/google', route(routes.authGoogleEntry))

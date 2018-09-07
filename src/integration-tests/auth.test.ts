@@ -129,7 +129,7 @@ export async function testLoginFlow({setup, agent}) {
         })
     ])
 
-    const loginResponse = await agent.get('/auth/passwordless/login/finish').query({
+    const loginResponse = await agent.post('/auth/passwordless/login/finish').query({
         email,
         token: tokens[0]['tokenString'],
     })

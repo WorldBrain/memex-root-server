@@ -17,6 +17,9 @@ class App extends Component {
         <Route exact path="/auth/login" render={
           props => <Login {...props} backend={this.props.backend} storage={this.props.storage} />
         } />
+        <Route exact path="/auth/login/finish" render={
+          props => <LoginFinish {...props} backend={this.props.backend} storage={this.props.storage} />
+        } />
         <Route exact path="/auth/register" render={props => <Register {...props} backend={this.props.backend} />} />
         <Route exact path="/auth/register/started" render={props => <RegisterStarted {...props} backend={this.props.backend} />} />
         <Route exact path="/email/verify" render={
@@ -103,6 +106,42 @@ class LoginStarted extends Component {
   }
 }
 
+class LoginFinish extends Component {
+  static propTypes = {
+    backend: PropTypes.object.isRequired,
+    storage: PropTypes.object.isRequired,
+  }
+
+  state = {
+    'status': 'pending',
+    'error': ''
+  }
+
+  async componentDidMount() {
+    const search = this.props.location.search
+    const email = /email=([^&]+)/.exec(search)[1]
+    const code = /code=([^&]+)/.exec(search)[1]
+
+    const result = await this.props.backend.finishLogin(email, code)
+    if (!result.success) {
+      this.setState({status: 'error', error: result.error})
+    } else {
+      this.setState({status: 'done'})
+      postAuthRedirect(this.props.storage)
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.status === 'pending' && "Logging you in..."}
+        {this.state.status === 'error' && "Something has gone wrong logging you in..."}
+        {this.state.status === 'done' && "It worked! Now sending you back to wherever you came from  :)"}
+      </div>
+    )
+  }
+}
+
 class Register extends Component {
   static propTypes = {
     backend: PropTypes.object.isRequired,
@@ -166,6 +205,7 @@ class RegisterStarted extends Component {
 
 class RegisterFinish extends Component {
   static propTypes = {
+    backend: PropTypes.object.isRequired,
     storage: PropTypes.object.isRequired,
   }
 

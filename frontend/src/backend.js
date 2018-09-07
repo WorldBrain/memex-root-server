@@ -23,6 +23,9 @@ export default class AuthBackend {
     async finishLogin(email, token) {
         try {
             // await new Promise(resolve => setTimeout(resolve, 500))
+            // return {success: true}
+            // return {error: 'internal'}
+
             return await (await fetch(`${this.baseUrl}/auth/passwordless/login/finish`, {
                 method: 'POST',
                 headers: {
