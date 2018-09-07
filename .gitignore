@@ -97,7 +97,7 @@ browserify-cache.json
 assets/build/script.js
 
 # Used as root for local development server
-public
+./public
 
 env-*.json
 claudia.json
