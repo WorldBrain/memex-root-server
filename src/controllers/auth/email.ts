@@ -2,8 +2,11 @@ import { UserStorage } from '../../components/storage/modules/auth'
 
 export function verify({userStorage} : {userStorage : UserStorage}) {
     return async ({code}) => {
-        const {email, identifier} = await userStorage.verifyUserEmail({code})
-        const user = await userStorage.findByIdentifier(identifier)
+        const result = await userStorage.verifyUserEmail({code})
+        if (!result) {
+            return null
+        }
+        const user = await userStorage.findByIdentifier(result.identifier)
         return {user}
     }
 }

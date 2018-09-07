@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const cookieEncrypter = require('cookie-encrypter')
 const cookieSession = require('cookie-session')
@@ -36,6 +37,7 @@ export default function createApp(config : ExpressAppConfig) {
   }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
+  app.use(cors({origin: config.domain.indexOf('localhost') === -1 ? 'https://static.memex.cloud' : 'http://localhost:3000'}))
   app.use(passport.initialize())
   app.use(passport.session())
   

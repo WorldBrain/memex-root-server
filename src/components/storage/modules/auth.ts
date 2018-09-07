@@ -77,7 +77,7 @@ export class UserStorage extends StorageModule {
                     isVerified: false,
                     isPrimary: true,
                     verificationCode: {
-                        expires: Date.now() + 1000 * 60 * 60 * 24
+                        expiry: Date.now() + 1000 * 60 * 60 * 24
                     }
                 }
             ]
@@ -104,11 +104,14 @@ export class UserStorage extends StorageModule {
     }
 
     async verifyUserEmail({code} : {code : string}) : Promise<{identifier : string, email : string} | null> {
+        console.log('code', code)
         const verificationCode = await this.collections.userEmailVerificationCode.findOneObject({code})
         if (!verificationCode) {
             return null
         }
-        if (verificationCode['expires'] <= Date.now()) {
+
+        console.log('expiry', verificationCode['expiry'].getTime(), Date.now(), verificationCode['expiry'].getTime() <= Date.now())
+        if (verificationCode['expiry'].getTime() <= Date.now()) {
             return null
         }
 
