@@ -75,6 +75,6 @@ export default class AuthBackend {
 }
 
 export function getRootOrigin() {
-    // return 'https://memex.cloud'
-    return 'http://localhost:3002'
+    return 'https://memex.cloud'
+    // return 'http://localhost:3002'
 }

@@ -25,9 +25,13 @@ export class PasswordlessTokenStorage extends StorageModule {
         this.tokenLifetimeInMs = tokenLifetimeInMs
     }
 
-    async createToken({email} : {email : string}) : Promise<string> {
+    async createToken({email, tokenString} : {email : string, tokenString? : string}) : Promise<string> {
         await this.collections.passwordlessToken.deleteObjects({email})
-        const {object} = await this.collections.passwordlessToken.createObject({email, expires: Date.now() + this.tokenLifetimeInMs})
+        const toInsert = {email, expires: Date.now() + this.tokenLifetimeInMs}
+        if (tokenString) {
+            toInsert['tokenString'] = tokenString
+        }
+        const {object} = await this.collections.passwordlessToken.createObject(toInsert)
         return object.tokenString
     }
 

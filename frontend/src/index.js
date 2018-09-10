@@ -1,18 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
-import './index.css';
-import App from './App';
 import AuthBackend, { getRootOrigin } from './backend';
 import Storage from './storage';
+import setupUi from './react'
 // import registerServiceWorker from './registerServiceWorker';
 
 const backend = new AuthBackend(getRootOrigin())
 const storage = new Storage()
+const services = {
+    postAuthRedirect: async () => {
+        const url = await storage.getReturnTo()
+        if (url) {
+            window.location.href = url
+        }
+    }
+}
+setupUi({backend, storage, services})
 
-ReactDOM.render((
-    <BrowserRouter>
-        <App backend={backend} storage={storage} />
-    </BrowserRouter>
-), document.getElementById('root'))
 // registerServiceWorker();

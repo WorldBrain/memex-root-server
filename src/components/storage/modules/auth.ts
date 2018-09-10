@@ -46,7 +46,7 @@ export class UserStorage extends StorageModule {
         }
     }
 
-    async registerUser({email, passwordHash} : {email, passwordHash : string}) {
+    async registerUser({email, passwordHash, active = false} : {email, passwordHash : string, active? : boolean}) {
         const identifier = `email:${email}`
         const existingUser = await this.collections.user.findOneObject({identifier})
         if (existingUser) {
@@ -67,25 +67,26 @@ export class UserStorage extends StorageModule {
             return {emailVerificationCode: code, codeId}
         }
 
+        const verificationCode = !active ? {
+            expiry: Date.now() + 1000 * 60 * 60 * 24
+        } : null
         const {object: user} = await this.collections.user.createObject({
             identifier: identifier,
             passwordHash,
-            isActive: false,
+            isActive: active,
             emails: [
                 {
                     email,
-                    isVerified: false,
+                    isVerified: !active,
                     isPrimary: true,
-                    verificationCode: {
-                        expiry: Date.now() + 1000 * 60 * 60 * 24
-                    }
+                    verificationCode
                 }
             ]
         })
 
         return {
-            emailVerificationCode: user.emails[0].verificationCode.code,
-            codeId: user.emails[0].verificationCode.id
+            emailVerificationCode: !active ? user.emails[0].verificationCode.code : null,
+            codeId: !active ? user.emails[0].verificationCode.id : null
         }
     }
 
@@ -104,13 +105,11 @@ export class UserStorage extends StorageModule {
     }
 
     async verifyUserEmail({code} : {code : string}) : Promise<{identifier : string, email : string} | null> {
-        console.log('code', code)
         const verificationCode = await this.collections.userEmailVerificationCode.findOneObject({code})
         if (!verificationCode) {
             return null
         }
 
-        console.log('expiry', verificationCode['expiry'].getTime(), Date.now(), verificationCode['expiry'].getTime() <= Date.now())
         if (verificationCode['expiry'].getTime() <= Date.now()) {
             return null
         }
