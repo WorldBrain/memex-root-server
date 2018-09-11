@@ -65,7 +65,10 @@ export async function createAppComponents(config : AppComponentsConfig) : Promis
 
 export async function createStorage(config : {backend : 'aws' | 'memory', databaseCredentials? : DatabaseCredentials, tier? : string}) {
   if (config.backend === 'memory') {
-    const backend = new SequelizeStorageBackend({sequelizeConfig: 'sqlite://'})
+    const backend = new SequelizeStorageBackend({
+      sequelizeConfig: 'sqlite://',
+      logging: process.env.LOG_SQL === 'true',
+    })
     const storageManager = new StorageManager({backend})
     const storage = new Storage({storageManager})
     await backend.migrate()

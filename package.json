@@ -12,6 +12,7 @@
     "prepare:watch": "tsc --watch",
     "typings": "typings",
     "tsc": "tsc",
+    "deploy-frontend": "cd frontend && yarn build && aws s3 sync --acl public-read --metadata Cache-Control=max-age=0 build/ s3://static.memex.cloud/",
     "test:jest": "jest --verbose --config=.jest-config.json",
     "test:jest:watch": "jest --verbose --watch --config=.jest-config.json",
     "test:mocha": "mocha --require ts-node/register 'src/**/*.test.ts'",

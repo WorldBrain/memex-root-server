@@ -135,8 +135,6 @@ export async function testLoginFlow({setup, agent}) {
     })
     fixSessionCookie(loginResponse, agent)
 
-    console.log(loginResponse)
-
     const checkResponse = await agent.get('/auth/check')
     expect(checkResponse.body).toEqual({
         authenticated: true

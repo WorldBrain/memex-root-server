@@ -73,11 +73,20 @@ export class OAuthStorage extends StorageModule {
         {clientId : oauthClient, redirectURI, userId : user, scope} :
         {clientId : string, redirectURI : string, userId : string, scope : string}
     ) : Promise<{code : string}> {
-        return (await this.collections.oauthGrantCode.createObject({
-            user, oauthClient,
-            redirectURI,
-            scope,
-        })).object
+        const existingCode = await this.collections.oauthGrantCode.findOneObject({user, oauthClient})
+        if (existingCode) {
+            // Hack
+            const code = await this.collectionDefinitions['oauthGrantCode']['fields']['code'].fieldObject.prepareForStorage(undefined)
+
+            await this.collections.oauthGrantCode.updateObjects({user, oauthClient}, {code, redirectURI})
+            return {code}
+        } else {
+            return (await this.collections.oauthGrantCode.createObject({
+                user, oauthClient,
+                redirectURI,
+                scope,
+            })).object
+        }
     }
 
     async findGrantCode({code} : {code : string}) {
@@ -88,11 +97,20 @@ export class OAuthStorage extends StorageModule {
         {userId : user, clientId : oauthClient, redirectURI, scope} :
         {userId : string, clientId : string, redirectURI : string, scope : string})
     {
-        return (await this.collections.oauthAccessToken.createObject({
-            user, oauthClient,
-            redirectURI,
-            scope
-        })).object
+        const existingToken = await this.collections.oauthAccessToken.findOneObject({user, oauthClient})
+        if (existingToken) {
+            // Hack
+            const token = await this.collectionDefinitions['oauthAccessToken']['fields']['token'].fieldObject.prepareForStorage(undefined)
+            
+            await this.collections.oauthAccessToken.updateObjects({user, oauthClient}, {token, redirectURI})
+            return {token}
+        } else {
+            return (await this.collections.oauthAccessToken.createObject({
+                user, oauthClient,
+                redirectURI,
+                scope
+            })).object
+        }
     }
 
     async findAccessToken(tokenString : string) {
