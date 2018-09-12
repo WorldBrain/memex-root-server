@@ -7,12 +7,19 @@ const backend = new AuthBackend(getRootOrigin())
 const storage = new Storage()
 const services = {
     postAuthRedirect: async () => {
-        const url = await storage.getReturnTo()
-        if (url) {
-            window.location.href = url
+        let url = await storage.getReturnTo()
+        if (!url) {
+            return
         }
+        if (url.indexOf('http') !== 0) {
+            url = `${getRootOrigin()}${url}`
+        }
+
+        window.location.href = url
     }
 }
 setupUi({backend, storage, services})
+
+Object.assign(window, {backend, storage, services})
 
 // registerServiceWorker();

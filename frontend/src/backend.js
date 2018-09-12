@@ -10,7 +10,8 @@ export default class AuthBackend {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
-                },        
+                },       
+                credentials: 'include', 
                 body: JSON.stringify({email})
             })).json()
         } catch (e) {
@@ -30,7 +31,8 @@ export default class AuthBackend {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
-                },        
+                },
+                credentials: 'include',
                 body: JSON.stringify({
                     email,
                     token
@@ -46,6 +48,7 @@ export default class AuthBackend {
             // await new Promise(resolve => setTimeout(resolve, 500))
             return await (await fetch(`${this.baseUrl}/auth/register`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                 },        
@@ -64,6 +67,7 @@ export default class AuthBackend {
 
             return await (await fetch(`${this.baseUrl}/email/verify?code=${code}`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                 }

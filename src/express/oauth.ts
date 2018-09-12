@@ -151,7 +151,15 @@ export function setupOAuthRoutes(
         passport.authenticate('bearer', { session: false }),
         async function (req, res) {
             const user = await userStorage.findById(req.user.userId)
-            res.json({id: user['id']})
+
+            const profile = {id: user['id'], email: undefined}
+
+            const identifierParts = user['identifier'] && user['identifier'].split(':')
+            if (identifierParts[0] === 'email') {
+                profile.email = identifierParts[1]
+            }
+
+            res.json(profile)
         }
     )
     app.post('/oauth/wp-link',

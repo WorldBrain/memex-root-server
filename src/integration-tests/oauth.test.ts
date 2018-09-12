@@ -82,7 +82,7 @@ async function testOAuthFlow({setup, agent, user, app, clientCredentials}) {
     // console.log(tokenResponse.body)
 
     const profileResponse = await request(app).get('/oauth/profile').auth(accessToken, accessToken, {type: 'bearer'})
-    expect(profileResponse.body).toEqual({id: user.id})
+    expect(profileResponse.body).toEqual({id: user.id, email: 'something@foo.com'})
 
     const linkResponse = await request(app)
         .post('/oauth/wp-link')

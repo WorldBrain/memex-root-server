@@ -37,7 +37,10 @@ export default function createApp(config : ExpressAppConfig) {
   }))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(cors({origin: config.domain.indexOf('localhost') === -1 ? 'https://static.memex.cloud' : 'http://localhost:3000'}))
+  app.use(cors({
+    origin: config.domain.indexOf('localhost') === -1 ? 'https://static.memex.cloud' : 'http://localhost:3000',
+    credentials: true,
+  }))
   app.use(passport.initialize())
   app.use(passport.session())
   
