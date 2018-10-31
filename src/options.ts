@@ -15,6 +15,7 @@ export interface Settings {
     adminAccessCode? : string
     databaseCredentials? : DatabaseCredentials
     googleCredentials?: { id : string, secret : string }
+    wooCommerceCredentials? : { id : string, secret : string }
     worldbrainOAuthCredentials? : { id : string, secret : string }
     cookieSecret: string
     devOptions?: DevShortcutsConfig
@@ -133,6 +134,17 @@ export function getRdsCredentials({tier} : {tier : DeploymentTier}) {
     return {host: 'memex-cloud.cq6sab3rf0cl.eu-central-1.rds.amazonaws.com', port: 5432, username, password}
 }
 
+export function getWooCommerceCredentials({tier} : {tier : DeploymentTier}) {
+    if (!process.env.WOOCOMMERCE_CLIENT_ID) {
+        return null
+    }
+
+    return {
+        id: requiredEnvVar('WOOCOMMERCE_CLIENT_ID', tier),
+        secret: requiredEnvVar('WOOCOMMERCE_CLIENT_SECRET', tier),
+    }
+}
+
 export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?, suppliedAdminAccessCode? : string} = {}) : Settings {
     let tier = getDeploymentTier()
 
@@ -148,6 +160,7 @@ export function getSettings({overwrites, suppliedAdminAccessCode} : {overwrites?
         domain: getDomain({tier}),
         baseUrl: getBaseUrl({tier}),
         googleCredentials: getGoogleCredentials({tier}),
+        wooCommerceCredentials: getWooCommerceCredentials({tier}),
         worldbrainOAuthCredentials: getWorldbrainOAuthCredentials({tier}),
         adminAccessCode: adminAccessCode,
         databaseCredentials: getRdsCredentials({tier}),

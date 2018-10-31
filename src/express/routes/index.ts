@@ -4,6 +4,7 @@ import * as authLocalRoutes from './auth/local'
 import * as authEmailRoutes from './auth/email'
 import * as authGoogleRoutes from './auth/google'
 import * as authPasswordlessRoutes from './auth/passwordless'
+import * as woocommerceRoutes from './woocommerce'
 
 export type RouteHandler = ({req, res}) => void
 
@@ -19,6 +20,7 @@ export interface AppRoutes {
   authGoogleRefresh : RouteHandler
   authPasswordlessLoginStart : RouteHandler
   authPasswordlessLoginFinish : RouteHandler
+  subscriptionsCheckAutomaticBackup : RouteHandler
 }
 
 export function createAppRoutes(appControllers : AppControllers) : AppRoutes {
@@ -33,6 +35,7 @@ export function createAppRoutes(appControllers : AppControllers) : AppRoutes {
     authGoogleCallback: authGoogleRoutes.authGoogleCallback(appControllers),
     authGoogleRefresh: authGoogleRoutes.authGoogleRefresh(appControllers),
     authPasswordlessLoginStart: authPasswordlessRoutes.loginStart(appControllers),
-    authPasswordlessLoginFinish: authLocalRoutes.authLocalLogin(appControllers, 'passwordless')
+    authPasswordlessLoginFinish: authLocalRoutes.authLocalLogin(appControllers, 'passwordless'),
+    subscriptionsCheckAutomaticBackup: woocommerceRoutes.subscriptionsCheckAutomaticBackup(appControllers),
   }
 }

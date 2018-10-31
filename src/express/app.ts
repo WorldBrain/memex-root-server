@@ -70,6 +70,7 @@ export function _configureRoutes(app : any, routes : AppRoutes, allowUndefinedRo
   app.get('/auth/google', route(routes.authGoogleEntry))
   app.get('/auth/google/callback', route(routes.authGoogleCallback))
   app.post('/auth/google/refresh', route(routes.authGoogleRefresh))
+  app.get('/subscriptions/automatic-backup', route(routes.subscriptionsCheckAutomaticBackup))
 }
 
 export function _configurePassport(passportStrategies : {[name : string] : any}) {

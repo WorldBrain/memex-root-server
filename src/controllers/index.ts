@@ -5,6 +5,7 @@ import * as authLocal from './auth/local'
 import * as authGoogle from './auth/google'
 import * as authEmail from './auth/email'
 import * as authPasswordless from './auth/passwordless'
+import * as woocommerce from './woocommerce'
 
 export interface AppControllers {
     adminHooksPreDeploy : Function
@@ -14,6 +15,7 @@ export interface AppControllers {
     authGoogleRefresh : Function
     authEmailVerify : Function
     authPasswordlessGenerateToken : Function
+    subscriptionsCheckAutomaticBackup : Function
 }
 
 export function createAppControllers(appComponents : AppComponents, settings : Settings) : AppControllers {
@@ -41,5 +43,8 @@ export function createAppControllers(appComponents : AppComponents, settings : S
             mailer: appComponents.mailer, emailGenerator: appComponents.verificationEmailGenerator,
             baseUrl: settings.baseUrl,
         }),
+        subscriptionsCheckAutomaticBackup: woocommerce.subscriptionsCheckAutomaticBackup({
+            wooCommerceCredentials: settings.wooCommerceCredentials
+        })
     }
 }
