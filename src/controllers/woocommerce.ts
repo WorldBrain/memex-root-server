@@ -14,6 +14,10 @@ export function subscriptionsCheckAutomaticBackup({wooCommerceCredentials}) {
     }
 }
 
+export function subscriptionsCancelAutomaticBackup() {
+    
+}
+
 export const WC_BACKUP_PRODUCT_ID = 7542
 
 export interface WooCommerceEntry {
@@ -22,8 +26,8 @@ export interface WooCommerceEntry {
     end_date : string
 }
 
-export function _getSubscriptionInfo(wooCommerceData : WooCommerceEntry[]) : {active : boolean, endDate : Date} {
-    let info = {active: false, endDate: null}
+export function _getActiveSubscription(wooCommerceData : WooCommerceEntry[]) : WooCommerceEntry {
+    let activeSubscription : WooCommerceEntry = null, activeEndDate = null
     for (const entry of wooCommerceData) {
         if (entry.status !== 'active' && entry.status !== 'pending-cancel') {
             continue
@@ -35,17 +39,29 @@ export function _getSubscriptionInfo(wooCommerceData : WooCommerceEntry[]) : {ac
 
         if (!entry.end_date) {
             // We won't find anything better than a never-ending subscription
-            return {active: true, endDate: null}
+            return entry
         }
 
         const endDate = moment(entry.end_date).toDate()
-        if (info.endDate) {
-            if (endDate.getTime() > info.endDate.getTime()) {
-                info.endDate = endDate
+        if (activeEndDate) {
+            if (endDate.getTime() > activeEndDate.getTime()) {
+                activeSubscription = entry
+                activeEndDate = endDate
             }
         } else {
-            info = {active: true, endDate}
+            activeSubscription = entry
+            activeEndDate = endDate
         }
     }
-    return info
+
+    return activeSubscription
+}
+
+export function _getSubscriptionInfo(wooCommerceData : WooCommerceEntry[]) : {active : boolean, endDate : Date} {
+    const activeSubscription = _getActiveSubscription(wooCommerceData)
+    if (activeSubscription) {
+        return {active: false, endDate: null}
+    }
+    
+    return {active: true, endDate: moment(activeSubscription.end_date).toDate()}
 }

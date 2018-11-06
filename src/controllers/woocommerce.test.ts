@@ -2,6 +2,13 @@ import { expect } from 'chai'
 import { _getSubscriptionInfo, WC_BACKUP_PRODUCT_ID } from './woocommerce';
 
 describe('WooCommerce integration', () => {
+    it('should return not active for users that have no orders at all', () => {
+        expect(_getSubscriptionInfo([])).to.deep.equal({
+            active: false,
+            endDate: null
+        })
+    })
+
     it('should ignore cancelled payments', () => {
         expect(_getSubscriptionInfo([
             {
